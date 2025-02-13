@@ -1,0 +1,11 @@
+gestion-clientes/
+│── src/
+│   ├── components/     # Componentes reutilizables
+│   ├── pages/          # Páginas principales
+│   ├── services/       # Llamadas a la API (cuando agreguemos backend)
+│   ├── context/        # Gestión de datos (si usamos Context API)
+│   ├── App.jsx         # Configuración de rutas
+│   ├── main.jsx        # Punto de entrada de React
+│── public/
+│── package.json
+│── vite.config.js
