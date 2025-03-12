@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose"; // ⬅ Cambiado a import
 
 const ClienteSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
@@ -7,9 +7,9 @@ const ClienteSchema = new mongoose.Schema({
   mac: { type: String, required: true, unique: true },
   wifiSSID: { type: String, required: true },
   wifiPassword: { type: String, required: true },
-  redPosicion: { type: String, required: true }, // Ejemplo: "2/2/13"
+  redPosicion: { type: String, required: true },
   ipModem: { type: String, required: true },
 });
 
 const Cliente = mongoose.model("Cliente", ClienteSchema);
-module.exports = Cliente;
+export default Cliente;
