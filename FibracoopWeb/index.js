@@ -28,7 +28,12 @@ mongoose
 // 📌 1️⃣ Registrar primero las rutas de la API
 app.use("/api/clientes", clientesRoutes);
 
-// 📌 2️⃣ Servir el frontend solo si la carpeta `dist` existe
+// 📌 2️⃣ Manejo de errores 404 para la API
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada en la API" });
+});
+
+// 📌 3️⃣ Servir el frontend solo si la carpeta `dist` existe
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.join(__dirname, "dist");
@@ -41,11 +46,6 @@ if (fs.existsSync(distPath)) {
 } else {
   console.log("⚠️ La carpeta 'dist' no existe. Solo se ejecutará la API.");
 }
-
-// 📌 3️⃣ Manejo de errores 404 para la API
-app.use("/api", (req, res) => {
-  res.status(404).json({ error: "Ruta no encontrada en la API" });
-});
 
 // 📌 4️⃣ Iniciar el servidor
 const PORT = process.env.PORT || 5000;

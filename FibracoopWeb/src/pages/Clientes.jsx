@@ -25,8 +25,11 @@ function Clientes() {
   // 📌 Manejar la apertura del modal con datos editables
   const abrirModal = (cliente) => {
     setClienteSeleccionado(cliente);
-    setDatosEditados({ ...cliente }); // Clonar los datos para edición
-  };
+    setDatosEditados({
+      ...cliente,
+      plan: `${cliente.plan} mb`,
+    });
+  };  
 
   // 📌 Manejar cambios en los inputs
   const handleChange = (e) => {
@@ -35,28 +38,44 @@ function Clientes() {
   };
 
   // 📌 Enviar los cambios al backend
-  const guardarCambios = async () => {
+  const handleGuardarCambios = async () => {
+    if (!clienteSeleccionado) return;
+  
     try {
-      const res = await fetch(`http://localhost:5000/api/clientes/${datosEditados._id}`, {
+      const datosParaEnviar = {
+        ...datosEditados,
+        plan: datosEditados.plan.replace(" mb", ""),
+      };
+  
+      const response = await fetch(`http://localhost:5000/api/clientes/${datosParaEnviar._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(datosEditados),
+        body: JSON.stringify(datosParaEnviar),
       });
-
-      if (!res.ok) throw new Error("Error al actualizar el cliente");
-
-      // Actualizar lista de clientes con la info editada
-      setClientes((prev) =>
-        prev.map((cliente) => (cliente._id === datosEditados._id ? datosEditados : cliente))
+  
+      if (!response.ok) {
+        throw new Error("Error al actualizar el cliente");
+      }
+  
+      const clienteActualizado = await response.json();
+  
+      // 📌 Actualizamos la lista de clientes con el nuevo dato
+      setClientes((prevClientes) =>
+        prevClientes.map((c) =>
+          c._id === clienteActualizado._id ? clienteActualizado : c
+        )
       );
-
+  
+      alert("Cliente actualizado correctamente"); // Confirmación visual
       setClienteSeleccionado(null); // Cerrar el modal
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
+      console.error("Error al guardar cambios:", error);
+      alert("Hubo un error al actualizar el cliente");
     }
   };
+  
 
   return (
     <div className="clientes-container">
@@ -100,10 +119,14 @@ function Clientes() {
             <input type="text" name="direccion" value={datosEditados.direccion} onChange={handleChange} />
 
             <label>📡 Plan:</label>
-            <select name="plan" value={datosEditados.plan} onChange={handleChange}>
-              <option value="15 mb">15 mb</option>
-              <option value="30 mb">30 mb</option>
-              <option value="50 mb">50 mb</option>
+            <select
+              name="plan"
+              value={datosEditados.plan.replace(" mb", "")}
+              onChange={(e) => setDatosEditados({ ...datosEditados, plan: `${e.target.value} mb` })} // Agregamos "mb" al valor
+            >
+              <option value="15">15 mb</option>
+              <option value="30">30 mb</option>
+              <option value="50">50 mb</option>
             </select>
 
             <label>🖧 MAC:</label>
@@ -129,7 +152,7 @@ function Clientes() {
 
             {/* Botones de acción */}
             <div className="modal-buttons">
-              <button onClick={guardarCambios}>Guardar</button>
+              <button className="save-btn" onClick={handleGuardarCambios}>Guardar cambios</button>
               <button className="close-btn" onClick={() => setClienteSeleccionado(null)}>Cerrar</button>
             </div>
           </div>
