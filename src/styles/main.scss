@@ -1,0 +1,87 @@
+// 🎨 Paleta de colores
+$primary-color: #007bff;
+$secondary-color: #17a2b8;
+$background-color: #f8f9fa;
+$text-color: #343a40;
+
+// 🌍 Estilos globales
+body {
+  font-family: "Arial", sans-serif;
+  background-color: $background-color;
+  color: $text-color;
+  margin: 0;
+  padding: 0;
+}
+
+// Variables de colores (ejemplo)
+$primary-color: #282c34;
+$text-color: white;
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  padding: 1rem;
+  background: $primary-color;
+  
+  a {
+    margin-right: 1rem;
+    color: $text-color;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+.home-container {
+  text-align: center;
+  padding: 2rem;
+
+  h1 {
+    color: #333;
+  }
+
+  .home-sections {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .card {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    h2 {
+      color: #007bff;
+    }
+  }
+}
