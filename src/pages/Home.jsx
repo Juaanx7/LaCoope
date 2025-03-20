@@ -12,8 +12,8 @@ function Home() {
           <p>Consulta, edita y administra la información de los clientes.</p>
         </a>
 
-        <a href="/conexiones" className="card">
-          <h2>📡 Conexiones</h2>
+        <a href="/estadisticas" className="card">
+          <h2>📡 Estadisticas</h2>
           <p>Revisa y gestiona el estado de las conexiones activas.</p>
         </a>
 
