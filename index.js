@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
+
 // 📌 Importar las rutas de clientes
 import clientesRoutes from "./src/routes/clientes.js";
 

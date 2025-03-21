@@ -9,6 +9,7 @@ const ClienteSchema = new mongoose.Schema({
   wifiPassword: { type: String, required: true },
   redPosicion: { type: String, required: true },
   ipModem: { type: String, required: true },
+  estado: { type: String, default: "activo" },
 });
 
 const Cliente = mongoose.model("Cliente", ClienteSchema);
