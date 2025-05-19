@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import HomeFibracoop from "./pages/HomeFibracoop";
 import Clientes from "./pages/Clientes";
 import Navbar from "./components/Navbar";
 import "./styles/main.scss";
@@ -11,10 +12,15 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
+        {/*Seccion Fibracoop*/}
         <Route path="/" element={<Home />} />
-        <Route path="/clientes" element={<Clientes />} />
-        <Route path="/configuracion" element={<Configuracion />} />
-        <Route path="/estadisticas" element={<Estadisticas />} />
+        <Route path="/fibracoop" element={<HomeFibracoop />} />
+        <Route path="/fibracoop/clientes" element={<Clientes />} />
+        <Route path="/fibracoop/estadisticas" element={<Estadisticas />} />
+
+        {/*Seccion Velocoop*/}
+        {/* <Route path="/velocoop" element={<HomeVelocoop />} /> */}
+        {/* <Route path="/velocoop/clientes" element={<ClientesVelocoop />} /> */}
       </Routes>
     </Router>
   );
