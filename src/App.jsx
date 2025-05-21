@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import "./styles/main.scss";
 import Configuracion from "./pages/Configuracion";
 import Estadisticas from "./pages/Estadisticas";
+import Tareas from "./pages/Tareas";
 
 function App() {
   return (
@@ -21,6 +22,9 @@ function App() {
         {/*Seccion Velocoop*/}
         {/* <Route path="/velocoop" element={<HomeVelocoop />} /> */}
         {/* <Route path="/velocoop/clientes" element={<ClientesVelocoop />} /> */}
+
+        {/*Seccion Tareas*/}
+        <Route path="/trabajos" element={<Tareas />} />
       </Routes>
     </Router>
   );

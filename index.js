@@ -6,9 +6,8 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
-
-// 📌 Importar las rutas de clientes
 import clientesRoutes from "./src/routes/clientes.js";
+import tareasRoutes from "./src/routes/tareas.js";
 
 dotenv.config();
 const app = express();
@@ -28,6 +27,7 @@ mongoose
 
 // 📌 1️⃣ Registrar primero las rutas de la API
 app.use("/api/clientes", clientesRoutes);
+app.use("/api/tareas", tareasRoutes);
 
 // 📌 2️⃣ Manejo de errores 404 para la API
 app.use("/api", (req, res) => {

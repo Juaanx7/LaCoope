@@ -1,0 +1,86 @@
+.tareas-container {
+  padding: 2rem;
+  text-align: center;
+
+  h1 {
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+  }
+}
+
+.semana {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.dia {
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 200px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tarea {
+  padding: 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &.pendiente {
+    background: #ffe5e5;
+    border: 1px solid #ff4d4d;
+  }
+
+  &.en\ proceso {
+    background: #fff7cc;
+    border: 1px solid #e6c200;
+  }
+
+  &.finalizada {
+    background: #e0ffe0;
+    border: 1px solid #4caf50;
+    text-decoration: line-through;
+  }
+}
+
+.form-nueva-tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  input {
+    padding: 0.4rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 768px) {
+  .semana {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dia {
+    width: 90%;
+  }
+}

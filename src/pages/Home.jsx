@@ -10,6 +10,7 @@ function Home() {
       <div className="home-options">
         <button onClick={() => navigate("/fibracoop")}>Fibracoop</button>
         <button onClick={() => navigate("/velocoop")}>Velocoop</button>
+        <button onClick={() => navigate("/trabajos")}>Trabajos diarios</button>
       </div>
     </div>
   );
