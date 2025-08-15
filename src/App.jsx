@@ -7,6 +7,7 @@ import "./styles/main.scss";
 import Configuracion from "./pages/Configuracion";
 import Estadisticas from "./pages/Estadisticas";
 import Tareas from "./pages/Tareas";
+import Historial from "./pages/Historial";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
 
         {/*Seccion Tareas*/}
         <Route path="/trabajos" element={<Tareas />} />
+        <Route path="/historial" element={<Historial />} />
       </Routes>
     </Router>
   );

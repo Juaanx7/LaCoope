@@ -1,6 +1,90 @@
-.historial-tareas-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
+.historial-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    margin-top: 2rem;
+    font-size: 1.3rem;
+  }
+
+  // Calendario DatePicker en modo inline
+  .react-datepicker {
+    display: inline-block;
+    font-size: 1rem;
+    margin: 0 auto;
+    width: 100%;
+
+    .react-datepicker__month-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .react-datepicker__day {
+      padding: 0.7rem;
+      font-size: 1rem;
+    }
+
+    .react-datepicker__day--selected {
+      background-color: #4caf50;
+      color: white;
+    }
+  }
+
+  .tareas-lista {
+    margin-top: 1.5rem;
+    list-style: none;
+    padding: 0;
+    text-align: left;
+
+    .tarea {
+      background-color: #f9f9f9;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      border-left: 5px solid #ccc;
+
+      &.pendiente {
+        border-color: #ff9800;
+      }
+
+      &.en\ proceso {
+        border-color: #2196f3;
+      }
+
+      &.finalizada {
+        border-color: #4caf50;
+        text-decoration: line-through;
+        color: #777;
+      }
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 1rem;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+    }
+
+    .react-datepicker__month-container {
+      max-width: 100%;
+    }
+
+    .tarea {
+      font-size: 0.95rem;
+    }
+  }
 }

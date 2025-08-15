@@ -9,11 +9,23 @@ function HistorialTareas() {
 
   useEffect(() => {
     const fechaISO = fechaSeleccionada.toISOString().slice(0, 10);
-    fetch(`http://localhost:5000/api/tareas?dia=${fechaISO}`)
+
+    fetch(`http://localhost:5000/api/tareas?semana=${fechaISO}`)
       .then((res) => res.json())
-      .then((data) => setTareasDelDia(data))
-      .catch((err) => console.error("Error al cargar tareas del día:", err));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTareasDelDia(data);
+        } else {
+          console.warn("Respuesta inesperada del servidor:", data);
+          setTareasDelDia([]); // evitar el error de .map
+        }
+      })
+      .catch((err) => {
+        console.error("Error al cargar tareas del día:", err);
+        setTareasDelDia([]);
+      });
   }, [fechaSeleccionada]);
+
 
   return (
     <div className="historial-container">

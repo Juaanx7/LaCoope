@@ -65,12 +65,27 @@
   }
 
   button {
-    background: #007bff;
-    color: white;
     border: none;
     padding: 0.4rem;
     border-radius: 5px;
     cursor: pointer;
+  }
+}
+
+.btn-historial {
+  margin: 1rem auto;
+  display: block;
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #2980b9;
   }
 }
 

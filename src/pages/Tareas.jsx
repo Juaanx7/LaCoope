@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/Tareas.scss";
+import { useNavigate } from "react-router-dom";
 
 const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -14,6 +15,7 @@ function Tareas() {
 
   const [nuevaTarea, setNuevaTarea] = useState("");
   const [diaSeleccionado, setDiaSeleccionado] = useState("");
+  const navigate = useNavigate();
 
   const agregarTarea = (dia) => {
     if (!nuevaTarea.trim()) return;
@@ -50,6 +52,9 @@ function Tareas() {
   return (
     <div className="tareas-container">
       <h1>🛠️ Trabajos Diarios</h1>
+      <button className="btn-historial" onClick={() => navigate("/historial")}>
+        📅 Ver historial mensual
+      </button>
       <div className="semana">
         {diasSemana.map((dia) => (
           <div key={dia} className="dia">
