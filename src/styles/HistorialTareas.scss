@@ -1,8 +1,11 @@
 .historial-container {
   padding: 2rem;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   text-align: center;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
   h1 {
     font-size: 2rem;
@@ -14,17 +17,16 @@
     font-size: 1.3rem;
   }
 
-  // Calendario DatePicker en modo inline
+  // 📆 Calendario DatePicker en modo inline
   .react-datepicker {
-    display: inline-block;
-    font-size: 1rem;
+    display: flex;
+    justify-content: center;
     margin: 0 auto;
-    width: 100%;
+    font-size: 1rem;
 
     .react-datepicker__month-container {
       width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
+      max-width: 600px;
     }
 
     .react-datepicker__day {
@@ -68,6 +70,12 @@
     }
   }
 
+  .react-datepicker__day.con-tarea {
+    background-color: #ffe082 !important;
+    border-radius: 50%;
+    color: #000;
+  }
+
   @media (max-width: 600px) {
     padding: 1rem;
 
@@ -85,6 +93,96 @@
 
     .tarea {
       font-size: 0.95rem;
+    }
+  }
+
+  .botones-acciones {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      min-width: 160px;
+      transition: background-color 0.3s ease;
+
+      &.btn-volver {
+        background-color: #e0e0e0;
+        color: #333;
+
+        &:hover {
+          background-color: #d5d5d5;
+        }
+      }
+
+      &.btn-exportar {
+        background-color: #4caf50;
+        color: white;
+
+        &:hover {
+          background-color: #43a047;
+        }
+      }
+    }
+  }
+  
+  .modal-exportar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+
+    .modal-contenido {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+
+      h3 {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-top: 1rem;
+        font-weight: bold;
+      }
+
+      .modal-botones {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-around;
+
+        button {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+
+          &:first-child {
+            background-color: #4caf50;
+            color: white;
+          }
+
+          &:last-child {
+            background-color: #f44336;
+            color: white;
+          }
+        }
+      }
     }
   }
 }

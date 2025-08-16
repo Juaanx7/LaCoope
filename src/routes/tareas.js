@@ -48,4 +48,45 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// 📌 Obtener fechas con tareas de un mes
+router.get("/fechas-con-tareas", async (req, res) => {
+  const { mes } = req.query; // formato esperado: "2025-08"
+  if (!mes) return res.status(400).json({ error: "Falta el mes" });
+
+  try {
+    const tareas = await Tarea.find({
+      fechaSemana: { $regex: `^${mes}` } // todas las fechas que comienzan con ese mes
+    });
+
+    // Extraer solo las fechas únicas
+    const fechas = [...new Set(tareas.map(t => t.fechaSemana))];
+    res.json(fechas);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener fechas" });
+  }
+});
+
+// 📌 Obtener tareas entre fechas
+router.get("/rango", async (req, res) => {
+  const { desde, hasta } = req.query;
+
+  if (!desde || !hasta) {
+    return res.status(400).json({ error: "Faltan fechas 'desde' o 'hasta'" });
+  }
+
+  try {
+    const tareas = await Tarea.find({
+      fechaSemana: {
+        $gte: desde,
+        $lte: hasta,
+      },
+    }).sort({ fechaSemana: 1 });
+
+    res.json(tareas);
+  } catch (err) {
+    console.error("Error al obtener tareas por rango:", err);
+    res.status(500).json({ error: "Error al buscar tareas por rango de fechas" });
+  }
+});
+
 export default router;
