@@ -1,5 +1,6 @@
 import "../styles/Navbar.scss";
 import { NavLink, Link } from "react-router-dom";
+import AreaSelector from "./AreaSelector";
 
 function Navbar() {
   return (
@@ -8,6 +9,9 @@ function Navbar() {
         <Link to="/" className="navbar-title">
           ⚡ Cooperativa Ltda de Electricidad
         </Link>
+      </div>
+      <div style={{ marginLeft: "auto" }}>
+        <AreaSelector />
       </div>
       <ul className="navbar-links">
         <li><NavLink to="/fibracoop">Inicio</NavLink></li>

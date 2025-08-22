@@ -99,3 +99,33 @@
     width: 90%;
   }
 }
+
+.dia.over {
+  outline: 2px dashed #1e88e5;
+  outline-offset: 4px;
+}
+
+/* cabecera con handle a la derecha */
+.tarea-header {
+  display: flex; align-items: center; gap: 8px;
+}
+.drag-handle {
+  margin-left: auto;
+  border: none; background: transparent;
+  cursor: grab; font-size: 16px; line-height: 1;
+  padding: 4px; border-radius: 6px;
+  touch-action: none;
+}
+.drag-handle:active { cursor: grabbing; }
+.tarea.dragging { box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: .95; }
+
+
+/* Evita saltos al arrastrar y selección accidental */
+.semana { position: relative; }
+.tarea { user-select: none; }
+
+/* Al pasar por columna destino */
+.dia.over { outline: 2px dashed #1e88e5; outline-offset: 4px; }
+
+/* Estilo del clon en overlay */
+.tarea.dragging { box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: .95; pointer-events: none; }

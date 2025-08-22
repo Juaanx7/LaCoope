@@ -1,74 +1,137 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/HistorialTareas.scss";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { useArea } from "../context/AreaContext";
+
+// ---------- helpers ----------
+function toYMD(date) {
+  const d = new Date(date);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+function monthStr(date) {
+  const d = new Date(date);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  return `${d.getFullYear()}-${m}`;
+}
+function parseDateLikeLocal(d) {
+  if (!d) return null;
+  if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    const [y, m, day] = d.split("-").map(Number);
+    return new Date(y, m - 1, day);
+  }
+  return new Date(d);
+}
+const statusLabel = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
+const statusClass = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
+function getStatusLabel(task) {
+  const raw = task.status || task.estado || "pending";
+  const norm = String(raw).toLowerCase().replace(/\s+/g, "_");
+  return statusLabel[norm] || raw;
+}
+function getStatusClass(task) {
+  const raw = task.status || task.estado || "pending";
+  const norm = String(raw).toLowerCase().replace(/\s+/g, "_");
+  return statusClass[norm] || raw;
+}
+function getDateISO(task) {
+  // Soporta docs nuevos y legacy
+  if (task.fechaSemana) return task.fechaSemana; // "YYYY-MM-DD"
+  if (task.date) {
+    const d = parseDateLikeLocal(task.date);
+    return d ? toYMD(d) : undefined;
+  }
+  return undefined;
+}
+function dayNameEs(date) {
+  try {
+    return new Intl.DateTimeFormat("es-AR", { weekday: "long" }).format(date);
+  } catch {
+    const names = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    return names[date.getDay()];
+  }
+}
 
 function HistorialTareas() {
+  const navigate = useNavigate();
+  const { area } = useArea();
+
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
   const [tareasDelDia, setTareasDelDia] = useState([]);
   const [fechasConTareas, setFechasConTareas] = useState([]);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [fechaDesde, setFechaDesde] = useState(null);
   const [fechaHasta, setFechaHasta] = useState(null);
-  const navigate = useNavigate();
 
-  // ✅ Obtener tareas del día
+  const fechaISO = useMemo(() => toYMD(fechaSeleccionada), [fechaSeleccionada]);
+  const mesISO = useMemo(() => monthStr(fechaSeleccionada), [fechaSeleccionada]);
+  const esFuturo = new Date(fechaSeleccionada) > new Date();
+
+  // ✅ Obtener tareas del día (compat: ?semana=YYYY-MM-DD) + filtro área
   useEffect(() => {
-    const fechaISO = fechaSeleccionada.toISOString().slice(0, 10);
-
-    fetch(`http://localhost:5000/api/tareas?semana=${fechaISO}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setTareasDelDia(data);
-        } else {
-          console.warn("Respuesta inesperada del servidor:", data);
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(`/api/tareas?semana=${fechaISO}&area=${area}`, { signal: controller.signal });
+        const data = await res.json();
+        setTareasDelDia(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error al cargar tareas del día:", err);
           setTareasDelDia([]);
         }
-      })
-      .catch((err) => {
-        console.error("Error al cargar tareas del día:", err);
-        setTareasDelDia([]);
-      });
-  }, [fechaSeleccionada]);
+      }
+    })();
+    return () => controller.abort();
+  }, [fechaISO, area]);
 
-  // ✅ Obtener fechas con tareas para resaltar
+  // ✅ Obtener fechas con tareas para resaltar (compat) + filtro área
   useEffect(() => {
-    const mes = fechaSeleccionada.toISOString().slice(0, 7); // "2025-08"
-
-    fetch(`http://localhost:5000/api/tareas/fechas-con-tareas?mes=${mes}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setFechasConTareas(data);
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(`/api/tareas/fechas-con-tareas?mes=${mesISO}&area=${area}`, { signal: controller.signal });
+        const data = await res.json();
+        setFechasConTareas(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error al obtener fechas con tareas:", err);
+          setFechasConTareas([]);
         }
-      })
-      .catch((err) => console.error("Error al obtener fechas con tareas:", err));
-  }, [fechaSeleccionada]);
+      }
+    })();
+    return () => controller.abort();
+  }, [mesISO, area]);
 
+  // ✅ Exportar a PDF por rango (usa /rango con área)
   const exportarPDF = async () => {
     if (!fechaDesde || !fechaHasta) {
       alert("Por favor seleccioná ambas fechas.");
       return;
     }
-    const desde = fechaDesde.toISOString().slice(0, 10);
-    const hasta = fechaHasta.toISOString().slice(0, 10);
+    const desde = toYMD(fechaDesde);
+    const hasta = toYMD(fechaHasta);
     try {
-      const res = await fetch(`http://localhost:5000/api/tareas/rango?desde=${desde}&hasta=${hasta}`);
+      const res = await fetch(`/api/tareas/rango?desde=${desde}&hasta=${hasta}&area=${area}`);
       const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
 
       const doc = new jsPDF();
-      doc.text("Historial de Tareas", 14, 15);
+      doc.text(`Historial de Tareas — ${area}`, 14, 15);
 
-      const rows = data.map(t => [
-        t.fechaSemana,
-        t.dia,
-        t.descripcion,
-        t.estado
-      ]);
+      const rows = list.map((t) => {
+        const iso = getDateISO(t);
+        const d = parseDateLikeLocal(iso || t.date);
+        const diaNombre = d ? dayNameEs(d) : "";
+        const desc = t.descripcion || t.description || t.title || "";
+        const estado = getStatusLabel(t);
+        return [iso || "", diaNombre, desc, estado];
+      });
 
       doc.autoTable({
         head: [["Fecha", "Día", "Descripción", "Estado"]],
@@ -76,16 +139,13 @@ function HistorialTareas() {
         startY: 25,
       });
 
-      doc.save(`Historial_Tareas_${desde}_a_${hasta}.pdf`);
+      doc.save(`Historial_Tareas_${area}_${desde}_a_${hasta}.pdf`);
       setMostrarModal(false);
     } catch (err) {
       console.error("Error al exportar tareas:", err);
       alert("Ocurrió un error al exportar.");
     }
   };
-
-
-  const esFuturo = new Date(fechaSeleccionada) > new Date();
 
   return (
     <div className="historial-container">
@@ -98,7 +158,7 @@ function HistorialTareas() {
         dateFormat="yyyy-MM-dd"
         inline
         dayClassName={(date) => {
-          const fecha = date.toISOString().slice(0, 10);
+          const fecha = toYMD(date);
           return fechasConTareas.includes(fecha) ? "con-tarea" : undefined;
         }}
       />
@@ -111,20 +171,29 @@ function HistorialTareas() {
         ) : tareasDelDia.length === 0 ? (
           <p>🎉 No se registraron tareas para este día.</p>
         ) : (
-          tareasDelDia.map((t) => (
-            <li key={t._id} className={`tarea ${t.estado}`}>
-              <strong>{t.dia}:</strong> {t.descripcion} — <em>{t.estado}</em>
-            </li>
-          ))
+          tareasDelDia.map((t) => {
+            const iso = getDateISO(t);
+            const d = iso ? parseDateLikeLocal(iso) : parseDateLikeLocal(t.date);
+            const diaNombre = d ? dayNameEs(d) : t.dia || "";
+            const desc = t.descripcion || t.description || t.title || "";
+            const estadoLabel = getStatusLabel(t);
+            const clase = getStatusClass(t); // genera "pendiente" | "en proceso" | "finalizada"
+            return (
+              <li key={t._id} className={`tarea ${clase}`}>
+                <strong>{diaNombre}:</strong> {desc} — <em>{estadoLabel}</em>
+              </li>
+            );
+          })
         )}
       </ul>
+
       <div className="botones-acciones">
         <button onClick={() => navigate("/trabajos")} className="btn-volver">
           Volver
         </button>
         <button onClick={() => setMostrarModal(true)} className="btn-exportar">
           📤 Exportar historial
-        </button>     
+        </button>
       </div>
 
       {mostrarModal && (

@@ -1,5 +1,5 @@
 {
-  "name": "fibracoopweb",
+  "name": "lacoope-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,9 +10,11 @@
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:areas": "node src/seeds/areas.seed.js"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
     "axios": "^1.7.9",
     "chart.js": "^4.4.9",
     "cors": "^2.8.5",
