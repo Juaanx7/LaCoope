@@ -4,7 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../styles/HistorialTareas.scss";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { useArea } from "../context/AreaContext";
 
 // ---------- helpers ----------
@@ -14,10 +14,11 @@ function toYMD(date) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${d.getFullYear()}-${m}-${day}`;
 }
-function monthStr(date) {
+function monthRange(date) {
   const d = new Date(date);
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${d.getFullYear()}-${m}`;
+  const from = new Date(d.getFullYear(), d.getMonth(), 1);
+  const to = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  return { from: toYMD(from), to: toYMD(to) };
 }
 function parseDateLikeLocal(d) {
   if (!d) return null;
@@ -27,8 +28,10 @@ function parseDateLikeLocal(d) {
   }
   return new Date(d);
 }
+
 const statusLabel = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
 const statusClass = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
+
 function getStatusLabel(task) {
   const raw = task.status || task.estado || "pending";
   const norm = String(raw).toLowerCase().replace(/\s+/g, "_");
@@ -40,8 +43,8 @@ function getStatusClass(task) {
   return statusClass[norm] || raw;
 }
 function getDateISO(task) {
-  // Soporta docs nuevos y legacy
-  if (task.fechaSemana) return task.fechaSemana; // "YYYY-MM-DD"
+  // preferimos fechaSemana (ya la generás en el model)
+  if (task.fechaSemana) return task.fechaSemana;
   if (task.date) {
     const d = parseDateLikeLocal(task.date);
     return d ? toYMD(d) : undefined;
@@ -52,7 +55,7 @@ function dayNameEs(date) {
   try {
     return new Intl.DateTimeFormat("es-AR", { weekday: "long" }).format(date);
   } catch {
-    const names = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const names = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
     return names[date.getDay()];
   }
 }
@@ -69,17 +72,22 @@ function HistorialTareas() {
   const [fechaHasta, setFechaHasta] = useState(null);
 
   const fechaISO = useMemo(() => toYMD(fechaSeleccionada), [fechaSeleccionada]);
-  const mesISO = useMemo(() => monthStr(fechaSeleccionada), [fechaSeleccionada]);
+  const { from: monthFrom, to: monthTo } = useMemo(() => monthRange(fechaSeleccionada), [fechaSeleccionada]);
+
   const esFuturo = new Date(fechaSeleccionada) > new Date();
 
-  // ✅ Obtener tareas del día (compat: ?semana=YYYY-MM-DD) + filtro área
+  // ✅ Obtener tareas del día con from/to
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/api/tareas?semana=${fechaISO}&area=${area}`, { signal: controller.signal });
-        const data = await res.json();
-        setTareasDelDia(Array.isArray(data) ? data : []);
+        const res = await fetch(`/api/tareas?area=${area}&from=${fechaISO}&to=${fechaISO}`, {
+          signal: controller.signal,
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || "Error al cargar tareas del día");
+        const list = Array.isArray(json) ? json : json?.data || [];
+        setTareasDelDia(list);
       } catch (err) {
         if (err.name !== "AbortError") {
           console.error("Error al cargar tareas del día:", err);
@@ -90,14 +98,25 @@ function HistorialTareas() {
     return () => controller.abort();
   }, [fechaISO, area]);
 
-  // ✅ Obtener fechas con tareas para resaltar (compat) + filtro área
+  // ✅ Fechas con tareas: pedimos todas las del mes y generamos el set de fechas
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/api/tareas/fechas-con-tareas?mes=${mesISO}&area=${area}`, { signal: controller.signal });
-        const data = await res.json();
-        setFechasConTareas(Array.isArray(data) ? data : []);
+        const res = await fetch(`/api/tareas?area=${area}&from=${monthFrom}&to=${monthTo}`, {
+          signal: controller.signal,
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error || "Error al cargar tareas del mes");
+        const list = Array.isArray(json) ? json : json?.data || [];
+
+        const set = new Set();
+        list.forEach((t) => {
+          const iso = getDateISO(t);
+          if (iso) set.add(iso);
+        });
+
+        setFechasConTareas(Array.from(set));
       } catch (err) {
         if (err.name !== "AbortError") {
           console.error("Error al obtener fechas con tareas:", err);
@@ -106,9 +125,9 @@ function HistorialTareas() {
       }
     })();
     return () => controller.abort();
-  }, [mesISO, area]);
+  }, [monthFrom, monthTo, area]);
 
-  // ✅ Exportar a PDF por rango (usa /rango con área)
+  // ✅ Exportar PDF por rango usando from/to
   const exportarPDF = async () => {
     if (!fechaDesde || !fechaHasta) {
       alert("Por favor seleccioná ambas fechas.");
@@ -116,24 +135,26 @@ function HistorialTareas() {
     }
     const desde = toYMD(fechaDesde);
     const hasta = toYMD(fechaHasta);
+
     try {
-      const res = await fetch(`/api/tareas/rango?desde=${desde}&hasta=${hasta}&area=${area}`);
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : [];
+      const res = await fetch(`/api/tareas?area=${area}&from=${desde}&to=${hasta}`);
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Error al obtener tareas del rango");
+      const list = Array.isArray(json) ? json : json?.data || [];
 
       const doc = new jsPDF();
       doc.text(`Historial de Tareas — ${area}`, 14, 15);
 
       const rows = list.map((t) => {
-        const iso = getDateISO(t);
-        const d = parseDateLikeLocal(iso || t.date);
+        const iso = getDateISO(t) || "";
+        const d = iso ? parseDateLikeLocal(iso) : parseDateLikeLocal(t.date);
         const diaNombre = d ? dayNameEs(d) : "";
         const desc = t.descripcion || t.description || t.title || "";
         const estado = getStatusLabel(t);
-        return [iso || "", diaNombre, desc, estado];
+        return [iso, diaNombre, desc, estado];
       });
 
-      doc.autoTable({
+      autoTable(doc, {
         head: [["Fecha", "Día", "Descripción", "Estado"]],
         body: rows,
         startY: 25,
@@ -143,7 +164,7 @@ function HistorialTareas() {
       setMostrarModal(false);
     } catch (err) {
       console.error("Error al exportar tareas:", err);
-      alert("Ocurrió un error al exportar.");
+      alert(err.message || "Ocurrió un error al exportar.");
     }
   };
 
@@ -151,7 +172,6 @@ function HistorialTareas() {
     <div className="historial-container">
       <h1>📅 Historial de Tareas</h1>
 
-      {/* 📆 Calendario */}
       <DatePicker
         selected={fechaSeleccionada}
         onChange={(date) => setFechaSeleccionada(date)}
@@ -174,10 +194,11 @@ function HistorialTareas() {
           tareasDelDia.map((t) => {
             const iso = getDateISO(t);
             const d = iso ? parseDateLikeLocal(iso) : parseDateLikeLocal(t.date);
-            const diaNombre = d ? dayNameEs(d) : t.dia || "";
+            const diaNombre = d ? dayNameEs(d) : "";
             const desc = t.descripcion || t.description || t.title || "";
             const estadoLabel = getStatusLabel(t);
-            const clase = getStatusClass(t); // genera "pendiente" | "en proceso" | "finalizada"
+            const clase = getStatusClass(t);
+
             return (
               <li key={t._id} className={`tarea ${clase}`}>
                 <strong>{diaNombre}:</strong> {desc} — <em>{estadoLabel}</em>
@@ -188,7 +209,7 @@ function HistorialTareas() {
       </ul>
 
       <div className="botones-acciones">
-        <button onClick={() => navigate("/trabajos")} className="btn-volver">
+        <button onClick={() => navigate("/")} className="btn-volver">
           Volver
         </button>
         <button onClick={() => setMostrarModal(true)} className="btn-exportar">
@@ -201,17 +222,9 @@ function HistorialTareas() {
           <div className="modal-contenido">
             <h3>📆 Seleccionar rango de fechas</h3>
             <label>Desde:</label>
-            <DatePicker
-              selected={fechaDesde}
-              onChange={(date) => setFechaDesde(date)}
-              dateFormat="yyyy-MM-dd"
-            />
+            <DatePicker selected={fechaDesde} onChange={(date) => setFechaDesde(date)} dateFormat="yyyy-MM-dd" />
             <label>Hasta:</label>
-            <DatePicker
-              selected={fechaHasta}
-              onChange={(date) => setFechaHasta(date)}
-              dateFormat="yyyy-MM-dd"
-            />
+            <DatePicker selected={fechaHasta} onChange={(date) => setFechaHasta(date)} dateFormat="yyyy-MM-dd" />
             <div className="modal-botones">
               <button onClick={exportarPDF}>✅ Exportar</button>
               <button onClick={() => setMostrarModal(false)}>❌ Cancelar</button>

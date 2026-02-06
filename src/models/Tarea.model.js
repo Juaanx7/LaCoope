@@ -54,6 +54,7 @@ const TareaSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 100 },
     description: { type: String, trim: true, default: "" },
+    client: { type: String, trim: true, default: "" },
 
     // Multi-área (guardamos slug para filtrar fácil)
     area: { type: String, required: true, lowercase: true, trim: true, index: true },

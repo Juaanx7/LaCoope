@@ -3,6 +3,8 @@ import "../styles/Tareas.scss";
 import { useNavigate } from "react-router-dom";
 import { useArea } from "../context/AreaContext";
 import { useTasks } from "../hooks/useTasks";
+import TaskModal from "../components/TaskModal";
+import TaskDetailModal from "../components/TaskDetailModal";
 import {
   DndContext,
   useDroppable,
@@ -47,7 +49,6 @@ function getISOWeekStr(dateInput = new Date()) {
 }
 
 // --- mapeos de estado (interno -> UI) ---
-const nextStatus = { pending: "in_progress", in_progress: "done", done: "pending" };
 const statusLabel = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
 const statusClass = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
 
@@ -60,36 +61,62 @@ function DroppableColumn({ id, children }) {
     </div>
   );
 }
-
-// Draggable “desde toda la card”
 function DraggableCard({ id, children }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
   return children({
     setNodeRef,
     isDragging,
-    dragProps: { ...listeners, ...attributes }, // ← se aplican a la card completa
+    dragProps: { ...listeners, ...attributes },
   });
+}
+
+// Extrae el cliente de la tarea (campo client o notas)
+function getCliente(task) {
+  if (task?.client && String(task.client).trim()) return String(task.client).trim();
+
+  const notes = task?.notes || "";
+  const line = String(notes)
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.toLowerCase().startsWith("cliente:"));
+
+  return line ? line.split(":").slice(1).join(":").trim() : "";
 }
 
 export default function Tareas() {
   const navigate = useNavigate();
   const { area } = useArea();
 
-  // lunes de la semana actual
+  // toast
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 1800);
+  };
+
+  // semana actual
   const [anchorDate, setAnchorDate] = useState(() => startOfISOWeek(new Date()));
   const week = useMemo(() => getISOWeekStr(anchorDate), [anchorDate]);
 
-  // estado del form
-  const [nuevaTarea, setNuevaTarea] = useState("");
-  const [diaSeleccionado, setDiaSeleccionado] = useState("");
+  // modal creación
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dayIdxForNew, setDayIdxForNew] = useState(null);
 
-  // DnD: umbral y delay para no iniciar drag con un click normal
+  // modal detalle
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailId, setDetailId] = useState(null);
+
+  // bandera anti “click al soltar drag”
+  const [wasDragging, setWasDragging] = useState(false);
+
+  // DnD: activación más fluida
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8, delay: 120, tolerance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 3, tolerance: 6 } })
   );
 
   // fetch de tareas por área+semana ISO
-  const { tasks, loading, error, createTask, patchStatus, removeTask, updateTask } = useTasks({
+  const { tasks, loading, error, createTask, updateTask, refetch } = useTasks({
     area,
     week,
   });
@@ -98,7 +125,7 @@ export default function Tareas() {
   const [activeId, setActiveId] = useState(null);
   const activeTask = useMemo(() => tasks.find((t) => t._id === activeId), [tasks, activeId]);
 
-  // Agrupa por día (0..4) con diferencia de fechas respecto al lunes ancla
+  // Agrupa por día (0..4)
   const tareasPorDia = useMemo(() => {
     const map = { 0: [], 1: [], 2: [], 3: [], 4: [] };
     const base = new Date(anchorDate);
@@ -107,6 +134,7 @@ export default function Tareas() {
     (tasks || []).forEach((t) => {
       const ymd = t.fechaSemana || (t.date && String(t.date).slice(0, 10));
       if (!ymd) return;
+
       const [y, m, d] = ymd.split("-").map(Number);
       const localDate = new Date(y, m - 1, d);
       localDate.setHours(0, 0, 0, 0);
@@ -114,36 +142,15 @@ export default function Tareas() {
       const idx = Math.round((localDate - base) / 86400000);
       if (idx >= 0 && idx <= 4) map[idx].push(t);
     });
+
     return map;
   }, [tasks, anchorDate]);
-
-  const handleAgregar = async (diaIdx) => {
-    if (!nuevaTarea.trim()) return;
-    const ymd = toYMD(addDays(anchorDate, diaIdx));
-    try {
-      await createTask({ title: nuevaTarea.trim(), area, date: ymd });
-      setNuevaTarea("");
-      setDiaSeleccionado("");
-    } catch (e) {
-      alert(e.message || "Error al crear tarea");
-    }
-  };
-
-  const handleCambiarEstado = async (t) => {
-    const next = nextStatus[t.status] || "pending";
-    try {
-      await patchStatus(t._id, next);
-    } catch (e) {
-      alert(e.message || "Error al cambiar estado");
-    }
-  };
 
   // ---- Evitar “salto” del contenedor semanal: bloquear altura durante drag ----
   const semanaRef = useRef(null);
   const lockHeight = useCallback(() => {
     const el = semanaRef.current;
     if (!el) return;
-    // fija la altura actual para que no se recalculen layouts al volar la tarjeta
     el.style.height = `${el.offsetHeight}px`;
   }, []);
   const unlockHeight = useCallback(() => {
@@ -152,28 +159,39 @@ export default function Tareas() {
     el.style.height = "";
   }, []);
 
-  // --- DnD: mover entre días ---
-  const onDragStart = useCallback(({ active }) => {
-    setActiveId(active.id);
-    lockHeight();
-  }, [lockHeight]);
+  // --- DnD handlers ---
+  const onDragStart = useCallback(
+    ({ active }) => {
+      setActiveId(active.id);
+      setWasDragging(true);
+      lockHeight();
+    },
+    [lockHeight]
+  );
 
   const onDragCancel = useCallback(() => {
     setActiveId(null);
     unlockHeight();
+    setTimeout(() => setWasDragging(false), 0);
   }, [unlockHeight]);
 
   const onDragEnd = useCallback(
     async (event) => {
       const { active, over } = event;
+
       setActiveId(null);
       unlockHeight();
+      setTimeout(() => setWasDragging(false), 0);
+
       if (!over) return;
+
       const taskId = active.id;
       const dropId = over.id;
       if (!String(dropId).startsWith("day-")) return;
+
       const dayIdx = Number(String(dropId).split("-")[1] || 0);
       const newDate = toYMD(addDays(anchorDate, dayIdx));
+
       try {
         await updateTask(taskId, { date: newDate });
       } catch (e) {
@@ -185,15 +203,20 @@ export default function Tareas() {
 
   return (
     <div className="tareas-container">
-      <h1>🛠️ Trabajos Diarios</h1>
-
-      <div className="acciones-superior" style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+      <h1>🛠️ Trabajos semanales</h1>
+      <div
+        className="acciones-superior"
+        style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}
+      >
         <button className="btn-historial" onClick={() => navigate("/historial")}>
           📅 Ver historial mensual
         </button>
+
         <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
           <button onClick={() => setAnchorDate(addDays(anchorDate, -7))}>⟵ Semana</button>
-          <strong>{week} — {area}</strong>
+          <strong>
+            {week} — {area}
+          </strong>
           <button onClick={() => setAnchorDate(addDays(anchorDate, +7))}>Semana ⟶</button>
           <button onClick={() => setAnchorDate(startOfISOWeek(new Date()))}>Hoy</button>
         </div>
@@ -215,39 +238,32 @@ export default function Tareas() {
 
               {(tareasPorDia[idx] || []).map((t) => {
                 const claseEstado = statusClass[t.status] || "pendiente";
+                const cliente = getCliente(t);
+
                 return (
                   <DraggableCard key={t._id} id={t._id}>
                     {({ setNodeRef, isDragging, dragProps }) => (
                       <div
                         ref={setNodeRef}
-                        // Drag desde cualquier parte de la card:
                         {...dragProps}
-                        // Si el click es en un elemento interactivo, no arrastrar:
                         onPointerDownCapture={(e) => {
                           if (e.target.closest("[data-no-dnd]")) e.stopPropagation();
                         }}
-                        // Oculta el original durante el drag, pero manteniendo su espacio:
                         style={{ visibility: isDragging ? "hidden" : "visible", userSelect: "none" }}
                         className={`tarea ${claseEstado}`}
-                        onClick={() => handleCambiarEstado(t)}
-                        title="Mantené presionado o arrastrá para mover. Click para cambiar estado."
+                        onClick={() => {
+                          if (wasDragging) return;
+                          setDetailId(t._id);
+                          setDetailOpen(true);
+                        }}
+                        title="Click para ver detalle. Arrastrá para mover."
                       >
                         <div className="tarea-titulo">{t.title}</div>
-                        {t.description && <div className="tarea-desc">{t.description}</div>}
+
+                        {cliente ? <div className="tarea-sub">{cliente}</div> : null}
 
                         <div className="tarea-footer">
                           <span className="estado">({statusLabel[t.status] || t.status})</span>
-                          <button
-                            className="btn-eliminar"
-                            data-no-dnd
-                            onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeTask(t._id).catch((err) => alert(err.message));
-                            }}
-                          >
-                            Eliminar
-                          </button>
                         </div>
                       </div>
                     )}
@@ -255,33 +271,18 @@ export default function Tareas() {
                 );
               })}
 
-              {diaSeleccionado === dia ? (
-                <div className="form-nueva-tarea">
-                  <input
-                    type="text"
-                    value={nuevaTarea}
-                    onChange={(e) => setNuevaTarea(e.target.value)}
-                    placeholder="Descripción..."
-                  />
-                  <button onClick={() => handleAgregar(idx)}>Guardar</button>
-                  <button
-                    className="btn-cancelar"
-                    onClick={() => {
-                      setNuevaTarea("");
-                      setDiaSeleccionado("");
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => setDiaSeleccionado(dia)}>+ Nueva Tarea</button>
-              )}
+              <button
+                onClick={() => {
+                  setDayIdxForNew(idx);
+                  setModalOpen(true);
+                }}
+              >
+                + Nueva Tarea
+              </button>
             </DroppableColumn>
           ))}
         </div>
 
-        {/* Clon “volador” para el drag (evita reflujo) */}
         <DragOverlay>
           {activeTask ? (
             <div className={`tarea ${statusClass[activeTask.status] || "pendiente"} dragging`}>
@@ -291,6 +292,36 @@ export default function Tareas() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Modal crear */}
+      <TaskModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        area={area}
+        defaultDateYMD={toYMD(addDays(anchorDate, dayIdxForNew ?? 0))}
+        onSubmit={async (payload) => {
+          await createTask(payload);
+        }}
+      />
+
+      {/* Modal detalle */}
+      <TaskDetailModal
+        open={detailOpen}
+        taskId={detailId}
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailId(null);
+        }}
+        onUpdated={refetch}
+        onDeleted={() => {
+          setDetailOpen(false);
+          setDetailId(null);
+          refetch();
+        }}
+        onSaved={() => showToast("Cambios guardados ✓")}
+      />
+
+      {toast ? <div className="toast">{toast}</div> : null}
     </div>
   );
-};
+}

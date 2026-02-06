@@ -3,11 +3,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { AreaProvider } from "./context/AreaContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AreaProvider>
-      <App />
-    </AreaProvider>
+    <AuthProvider>
+      <AreaProvider>
+        <App />
+      </AreaProvider>
+    </AuthProvider>
   </React.StrictMode>
 );

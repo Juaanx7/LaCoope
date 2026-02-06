@@ -28,29 +28,35 @@
 }
 
 .tarea {
-  padding: 0.5rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
 
-  &.pendiente {
-    background: #ffe5e5;
-    border: 1px solid #ff4d4d;
-  }
+.tarea.pendiente {
+  background: rgba(196, 13, 13, 0.35);   // amarillo más fuerte
+  border-color: rgba(139, 9, 9, 0.55);
+}
 
-  &.en\ proceso {
-    background: #fff7cc;
-    border: 1px solid #e6c200;
-  }
+.tarea.en.proceso {
+  background: rgba(13, 110, 253, 0.30);  // azul (bootstrap-ish)
+  border-color: rgba(13, 110, 253, 0.55);
+}
 
-  &.finalizada {
-    background: #e0ffe0;
-    border: 1px solid #4caf50;
-    text-decoration: line-through;
-  }
+.tarea.finalizada {
+  background: rgba(25, 135, 84, 0.30);   // verde más fuerte
+  border-color: rgba(25, 135, 84, 0.55);
+}
+
+.tarea-titulo {
+  font-weight: 700;
+}
+
+.tarea-sub {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.85;
 }
 
 .form-nueva-tarea {
@@ -129,3 +135,19 @@
 
 /* Estilo del clon en overlay */
 .tarea.dragging { box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: .95; pointer-events: none; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 10050; // más alto que el modal
+  background: #3498db;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  pointer-events: none;
+}

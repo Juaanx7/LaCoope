@@ -1,32 +1,32 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import HomeFibracoop from "./pages/HomeFibracoop";
-import Clientes from "./pages/Clientes";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import "./styles/main.scss";
-import Configuracion from "./pages/Configuracion";
-import Estadisticas from "./pages/Estadisticas";
+
 import Tareas from "./pages/Tareas";
 import Historial from "./pages/Historial";
+import Configuracion from "./pages/Configuracion";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <Routes>
-        {/*Seccion Fibracoop*/}
-        <Route path="/" element={<Home />} />
-        <Route path="/fibracoop" element={<HomeFibracoop />} />
-        <Route path="/fibracoop/clientes" element={<Clientes />} />
-        <Route path="/fibracoop/estadisticas" element={<Estadisticas />} />
+        {/* Público */}
+        <Route path="/login" element={<Login />} />
 
-        {/*Seccion Velocoop*/}
-        {/* <Route path="/velocoop" element={<HomeVelocoop />} /> */}
-        {/* <Route path="/velocoop/clientes" element={<ClientesVelocoop />} /> */}
+        {/* Protegido - Navbar solo aparece aquí */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<><Navbar /><Outlet /></>}>
+            <Route path="/" element={<Tareas />} />
+            <Route path="/tareas" element={<Tareas />} />
+            <Route path="/historial" element={<Historial />} />
+            <Route path="/configuracion" element={<Configuracion />} />
+          </Route>
+        </Route>
 
-        {/*Seccion Tareas*/}
-        <Route path="/trabajos" element={<Tareas />} />
-        <Route path="/historial" element={<Historial />} />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

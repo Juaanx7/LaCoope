@@ -85,3 +85,11 @@ button {
     }
   }
 }
+
+.btn-danger {
+  background: #dc3545;
+  color: #fff;
+
+  &:hover { background: darken(#dc3545, 6%); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}
