@@ -1,153 +1,232 @@
-.tareas-container {
-  padding: 2rem;
-  text-align: center;
-
-  h1 {
-    margin-bottom: 2rem;
-    font-size: 1.8rem;
-  }
+.page {
+  width: min(1200px, 100%);
+  margin: 22px auto 0; /* centrar y separar del navbar */
+  padding: 22px;
+  background: var(--bg);
+  color: var(--text);
 }
 
-.semana {
+.page__header {
   display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
+  margin-bottom: 14px;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: .2px;
+}
+
+.page__subtitle {
+  margin: 6px 0 0 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.page__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Botones base (sirven para toda la app) */
+.btn {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .05s ease, background .15s ease, border-color .15s ease;
+}
+
+.btn:active { transform: scale(.99); }
+
+.btn--primary {
+  border: none;
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn--soft {
+  background: rgba(10, 140, 87, .08);
+  border-color: rgba(10, 140, 87, .18);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: rgba(0,0,0,.10);
+}
+
+.weekNav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.weekNav__label {
+  display: grid;
+  gap: 2px;
+  padding: 0 8px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.weekNav__area {
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+/* Alerts */
+.alert {
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.03);
+}
+
+.alert--info {
+  border-color: rgba(10,140,87,.20);
+  background: rgba(10,140,87,.08);
+}
+
+.alert--danger {
+  border-color: rgba(220,53,69,.25);
+  background: rgba(220,53,69,.10);
+  color: #b42318;
+}
+
+/* Semana (columnas) */
+.semana {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  align-items: start;
 }
 
 .dia {
-  background: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  width: 200px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.tarea {
-  border-radius: 12px;
-  padding: 10px 12px;
-  border: 1px solid rgba(0,0,0,.10);
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
-}
-
-.tarea.pendiente {
-  background: rgba(196, 13, 13, 0.35);   // amarillo más fuerte
-  border-color: rgba(139, 9, 9, 0.55);
-}
-
-.tarea.en.proceso {
-  background: rgba(13, 110, 253, 0.30);  // azul (bootstrap-ish)
-  border-color: rgba(13, 110, 253, 0.55);
-}
-
-.tarea.finalizada {
-  background: rgba(25, 135, 84, 0.30);   // verde más fuerte
-  border-color: rgba(25, 135, 84, 0.55);
-}
-
-.tarea-titulo {
-  font-weight: 700;
-}
-
-.tarea-sub {
-  margin-top: 4px;
-  font-size: 13px;
-  opacity: 0.85;
-}
-
-.form-nueva-tarea {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  input {
-    padding: 0.4rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-
-  button {
-    border: none;
-    padding: 0.4rem;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-}
-
-.btn-historial {
-  margin: 1rem auto;
-  display: block;
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #2980b9;
-  }
-}
-
-@media (max-width: 768px) {
-  .semana {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .dia {
-    width: 90%;
-  }
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+  min-height: 420px;
 }
 
 .dia.over {
-  outline: 2px dashed #1e88e5;
-  outline-offset: 4px;
+  outline: 3px solid rgba(10,140,87,.18);
 }
 
-/* cabecera con handle a la derecha */
-.tarea-header {
-  display: flex; align-items: center; gap: 8px;
+/* Header de columna */
+.dia h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
 }
-.drag-handle {
-  margin-left: auto;
-  border: none; background: transparent;
-  cursor: grab; font-size: 16px; line-height: 1;
-  padding: 4px; border-radius: 6px;
-  touch-action: none;
+
+/* Card de tarea */
+.tarea {
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+  transition: transform .08s ease, box-shadow .15s ease;
 }
-.drag-handle:active { cursor: grabbing; }
-.tarea.dragging { box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: .95; }
 
+.tarea:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(0,0,0,.10);
+}
 
-/* Evita saltos al arrastrar y selección accidental */
-.semana { position: relative; }
-.tarea { user-select: none; }
+.tarea-titulo { font-weight: 800; }
+.tarea-sub { margin-top: 6px; color: var(--muted); font-size: .92rem; }
+.tarea-footer { margin-top: 8px; color: var(--muted); font-size: .9rem; }
 
-/* Al pasar por columna destino */
-.dia.over { outline: 2px dashed #1e88e5; outline-offset: 4px; }
+/* Estados con una banda sutil (limpio, no chillón) */
+.tarea.pendiente { border-left: 6px solid rgba(255, 193, 7, .75); }
+.tarea.en\ proceso { border-left: 6px solid rgba(13, 110, 253, .65); }
+.tarea.finalizada { border-left: 6px solid rgba(10, 140, 87, .65); }
 
-/* Estilo del clon en overlay */
-.tarea.dragging { box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: .95; pointer-events: none; }
+.tarea.dragging {
+  box-shadow: 0 22px 55px rgba(0,0,0,.18);
+}
 
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  z-index: 10050; // más alto que el modal
-  background: #3498db;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 0 12px 30px rgba(0,0,0,.25);
-  pointer-events: none;
+/* Botón +Nueva Tarea */
+.dia > button {
+  width: 100%;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px dashed rgba(0,0,0,.18);
+  background: rgba(0,0,0,.02);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.dia > button:hover {
+  background: rgba(10,140,87,.06);
+  border-color: rgba(10,140,87,.25);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .semana { grid-template-columns: 1fr; }
+  .dia { min-height: auto; }
+}
+
+/* ✅ WeekNav responsive real */
+.weekNav {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 100%;
+}
+
+.weekNav__label {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 520px) {
+  .weekNav {
+    width: 100%;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .weekNav__label {
+    width: 100%;
+    order: -1;    
+    text-align: left;
+    padding: 0 2px;
+  }
+
+  .weekNav .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+
+  .weekNav .btn--primary {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 16px;
+    margin-top: 14px;
+  }
 }

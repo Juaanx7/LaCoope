@@ -413,7 +413,7 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
             {PRIORITY_LABEL[currentPriority] || currentPriority}
           </span>
 
-          <button className="btn btn-secondary tdm-close" onClick={handleClose}>
+          <button className="tdm-close" onClick={handleClose} aria-label="Cerrar">
             ✕
           </button>
         </div>
@@ -547,12 +547,11 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
 
         {/* Footer */}
         <div className="tdm-footer">
-          <button className="btn btn-danger" onClick={handleDelete} disabled={deleting || loading}>
+          <button className="tdm-btn tdm-btn--danger" onClick={handleDelete} disabled={deleting || loading}>
             {deleting ? "Eliminando…" : "Eliminar"}
           </button>
 
-          {/* Auto-save -> este botón solo cierra */}
-          <button className="btn btn-secondary" onClick={handleClose}>
+          <button className="tdm-btn tdm-btn--ghost" onClick={handleClose}>
             Cerrar
           </button>
         </div>

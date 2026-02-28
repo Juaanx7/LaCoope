@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useArea } from "../context/AreaContext";
+import "../styles/AreaSelector.scss";
 
 const FALLBACK = [
   { slug: "internet", name: "Internet" },
@@ -37,13 +38,14 @@ export default function AreaSelector() {
   }, [areas, area]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <label style={{ fontSize: 14, opacity: 0.8 }}>Área:</label>
+    <div className="area-selector">
+      <span className="area-selector__label">Área</span>
+
       <select
+        className="area-selector__select"
         value={area}
         onChange={(e) => setArea(e.target.value)}
         disabled={loading}
-        style={{ padding: "6px 8px", borderRadius: 6 }}
       >
         {options.map((a) => (
           <option key={a.slug} value={a.slug}>

@@ -202,28 +202,41 @@ export default function Tareas() {
   );
 
   return (
-    <div className="tareas-container">
-      <h1>🛠️ Trabajos semanales</h1>
-      <div
-        className="acciones-superior"
-        style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}
-      >
-        <button className="btn-historial" onClick={() => navigate("/historial")}>
-          📅 Ver historial mensual
-        </button>
+    <div className="page tareas">
+        <div className="page__header">
+          <div>
+            <h1 className="page__title">Trabajos semanales</h1>
+            <p className="page__subtitle">Organizá y mové tareas por día con drag & drop.</p>
+          </div>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={() => setAnchorDate(addDays(anchorDate, -7))}>⟵ Semana</button>
-          <strong>
-            {week} — {area}
-          </strong>
-          <button onClick={() => setAnchorDate(addDays(anchorDate, +7))}>Semana ⟶</button>
-          <button onClick={() => setAnchorDate(startOfISOWeek(new Date()))}>Hoy</button>
+          <div className="page__actions">
+            <button className="btn btn--ghost" onClick={() => navigate("/historial")}>
+              📅 Historial mensual
+            </button>
+
+            <div className="weekNav">
+              <button className="btn btn--soft" onClick={() => setAnchorDate(addDays(anchorDate, -7))}>
+                ⟵ Semana
+              </button>
+
+              <div className="weekNav__label">
+                <strong>{week}</strong>
+                <span className="weekNav__area">{area}</span>
+              </div>
+
+              <button className="btn btn--soft" onClick={() => setAnchorDate(addDays(anchorDate, +7))}>
+                Semana ⟶
+              </button>
+
+              <button className="btn btn--primary" onClick={() => setAnchorDate(startOfISOWeek(new Date()))}>
+                Hoy
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {loading && <p>Cargando tareas…</p>}
-      {error && <p style={{ color: "crimson" }}>Error: {error}</p>}
+      {loading && <div className="alert alert--info">Cargando tareas…</div>}
+      {error && <div className="alert alert--danger">Error: {error}</div>}
 
       <DndContext
         sensors={sensors}

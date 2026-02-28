@@ -1,34 +1,130 @@
-@use "main" as *;
-
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: $primary-color;
-  padding: 1rem 2rem;
-  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 
-  .navbar-logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+  height: 68px;
+  padding: 0 28px;
+
+  display: flex;
+  align-items: center;
+  gap: 28px;
+
+  background: rgba(10, 140, 87, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  border-bottom: 1px solid var(--border);
+}
+
+/* Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo-img {
+  height: 38px;
+  object-fit: contain;
+}
+
+/* Links */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links a {
+  position: relative;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+  padding: 8px 4px;
+  transition: color .15s ease;
+}
+
+.navbar-links a:hover {
+  color: var(--text);
+}
+
+/* Active state elegante */
+.navbar-links a.active {
+  color: var(--text);
+}
+
+.navbar-links a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -10px;
+  width: 100%;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--primary);
+}
+
+/* Area selector contenedor */
+.navbar > div:last-child {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .navbar {
+    padding: 0 16px;
+    gap: 16px;
   }
 
   .navbar-links {
-    list-style: none;
-    display: flex;
-    gap: 1.5rem;
+    gap: 12px;
+  }
+}
 
-    li {
-      a {
-        color: white;
-        text-decoration: none;
-        font-weight: bold;
-        transition: color 0.3s ease;
+@media (max-width: 520px) {
+  .navbar {
+    height: auto;
+    padding: 10px 12px;
+    gap: 10px;
+    flex-wrap: wrap;         /* clave */
+  }
 
-        &:hover {
-          color: $secondary-color;
-        }
-      }
-    }
+  .navbar-logo-img {
+    height: 30px;            /* logo más compacto */
+  }
+
+  /* Área selector: que pueda “encoger” y no empuje todo */
+  .area-selector {
+    margin-left: 0 !important;
+    flex: 1;
+    min-width: 180px;
+    justify-content: flex-end;
+  }
+
+  .area-selector__label {
+    display: none;           /* ocultamos “Área” en mobile */
+  }
+
+  .area-selector__select {
+    width: 100%;
+    max-width: 220px;
+  }
+
+  /* Links: que bajen a segunda fila y no se corten */
+  .navbar-links {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 14px;
+    padding-top: 6px;
+  }
+
+  .navbar-links a.active::after {
+    bottom: -6px;            /* corrige el underline en filas */
   }
 }

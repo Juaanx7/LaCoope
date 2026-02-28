@@ -1,0 +1,27 @@
+.area-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.area-selector__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.area-selector__select {
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.area-selector__select:focus {
+  outline: none;
+  border-color: rgba(10, 140, 87, .55);
+  box-shadow: 0 0 0 4px rgba(10, 140, 87, .12);
+}

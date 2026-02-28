@@ -169,65 +169,98 @@ function HistorialTareas() {
   };
 
   return (
-    <div className="historial-container">
-      <h1>📅 Historial de Tareas</h1>
+    <div className="page historial">
+      <div className="page__header">
+        <div>
+          <h1 className="page__title">Historial de tareas</h1>
+          <p className="page__subtitle">Seleccioná un día y revisá lo realizado. Podés exportar por rango.</p>
+        </div>
 
-      <DatePicker
-        selected={fechaSeleccionada}
-        onChange={(date) => setFechaSeleccionada(date)}
-        dateFormat="yyyy-MM-dd"
-        inline
-        dayClassName={(date) => {
-          const fecha = toYMD(date);
-          return fechasConTareas.includes(fecha) ? "con-tarea" : undefined;
-        }}
-      />
+        <div className="page__actions">
+          <button onClick={() => navigate("/")} className="btn btn--ghost">
+            Volver
+          </button>
+          <button onClick={() => setMostrarModal(true)} className="btn btn--primary">
+            📤 Exportar
+          </button>
+        </div>
+      </div>
 
-      <h2>Tareas del {fechaSeleccionada.toLocaleDateString()}</h2>
+      <div className="historial__grid">
+        <div className="card card--calendar">
+          <div className="card__title">Calendario</div>
 
-      <ul className="tareas-lista">
-        {esFuturo ? (
-          <p>📅 Has seleccionado una fecha futura. No hay tareas programadas.</p>
-        ) : tareasDelDia.length === 0 ? (
-          <p>🎉 No se registraron tareas para este día.</p>
-        ) : (
-          tareasDelDia.map((t) => {
-            const iso = getDateISO(t);
-            const d = iso ? parseDateLikeLocal(iso) : parseDateLikeLocal(t.date);
-            const diaNombre = d ? dayNameEs(d) : "";
-            const desc = t.descripcion || t.description || t.title || "";
-            const estadoLabel = getStatusLabel(t);
-            const clase = getStatusClass(t);
+          <DatePicker
+            selected={fechaSeleccionada}
+            onChange={(date) => setFechaSeleccionada(date)}
+            dateFormat="yyyy-MM-dd"
+            inline
+            dayClassName={(date) => {
+              const fecha = toYMD(date);
+              return fechasConTareas.includes(fecha) ? "con-tarea" : undefined;
+            }}
+          />
+        </div>
 
-            return (
-              <li key={t._id} className={`tarea ${clase}`}>
-                <strong>{diaNombre}:</strong> {desc} — <em>{estadoLabel}</em>
-              </li>
-            );
-          })
-        )}
-      </ul>
+        <div className="card card--list">
+          <div className="card__title">
+            Tareas del {fechaSeleccionada.toLocaleDateString()}
+          </div>
 
-      <div className="botones-acciones">
-        <button onClick={() => navigate("/")} className="btn-volver">
-          Volver
-        </button>
-        <button onClick={() => setMostrarModal(true)} className="btn-exportar">
-          📤 Exportar historial
-        </button>
+          <ul className="tareas-lista">
+            {esFuturo ? (
+              <li className="empty">📅 Has seleccionado una fecha futura. No hay tareas programadas.</li>
+            ) : tareasDelDia.length === 0 ? (
+              <li className="empty">🎉 No se registraron tareas para este día.</li>
+            ) : (
+              tareasDelDia.map((t) => {
+                const iso = getDateISO(t);
+                const d = iso ? parseDateLikeLocal(iso) : parseDateLikeLocal(t.date);
+                const diaNombre = d ? dayNameEs(d) : "";
+                const desc = t.descripcion || t.description || t.title || "";
+                const estadoLabel = getStatusLabel(t);
+                const clase = getStatusClass(t);
+
+                return (
+                  <li key={t._id} className={`tarea ${clase}`}>
+                    <div className="tarea__top">
+                      <strong>{diaNombre}</strong>
+                      <span className={`pill pill--${clase}`}>{estadoLabel}</span>
+                    </div>
+                    <div className="tarea__desc">{desc}</div>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>
       </div>
 
       {mostrarModal && (
-        <div className="modal-exportar">
-          <div className="modal-contenido">
-            <h3>📆 Seleccionar rango de fechas</h3>
-            <label>Desde:</label>
-            <DatePicker selected={fechaDesde} onChange={(date) => setFechaDesde(date)} dateFormat="yyyy-MM-dd" />
-            <label>Hasta:</label>
-            <DatePicker selected={fechaHasta} onChange={(date) => setFechaHasta(date)} dateFormat="yyyy-MM-dd" />
-            <div className="modal-botones">
-              <button onClick={exportarPDF}>✅ Exportar</button>
-              <button onClick={() => setMostrarModal(false)}>❌ Cancelar</button>
+        <div className="hm-backdrop" onMouseDown={() => setMostrarModal(false)}>
+          <div className="hm-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="hm-header">
+              <h3>Exportar historial</h3>
+              <button className="hm-close" onClick={() => setMostrarModal(false)} aria-label="Cerrar">
+                ✕
+              </button>
+            </div>
+
+            <div className="hm-body">
+              <label>Desde</label>
+              <DatePicker selected={fechaDesde} onChange={(date) => setFechaDesde(date)} dateFormat="yyyy-MM-dd" />
+
+              <label>Hasta</label>
+              <DatePicker selected={fechaHasta} onChange={(date) => setFechaHasta(date)} dateFormat="yyyy-MM-dd" />
+            </div>
+
+            <div className="hm-actions">
+              <button className="btn btn--ghost" onClick={() => setMostrarModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn btn--primary" onClick={exportarPDF}>
+                Exportar PDF
+              </button>
             </div>
           </div>
         </div>

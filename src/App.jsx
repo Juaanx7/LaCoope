@@ -4,7 +4,6 @@ import "./styles/main.scss";
 
 import Tareas from "./pages/Tareas";
 import Historial from "./pages/Historial";
-import Configuracion from "./pages/Configuracion";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -21,7 +20,6 @@ function App() {
             <Route path="/" element={<Tareas />} />
             <Route path="/tareas" element={<Tareas />} />
             <Route path="/historial" element={<Historial />} />
-            <Route path="/configuracion" element={<Configuracion />} />
           </Route>
         </Route>
 

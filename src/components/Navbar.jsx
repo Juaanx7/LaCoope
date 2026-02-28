@@ -1,13 +1,14 @@
 import "../styles/Navbar.scss";
 import { NavLink, Link } from "react-router-dom";
 import AreaSelector from "./AreaSelector";
+import logo from "../assets/logo-coope.png";
 
 function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
         <Link to="/" className="navbar-title">
-          Cooperativa Ltda de Electricidad de San Marcos Sierras
+          <img src={logo} alt="Cooperativa logo" className="navbar-logo-img" />
         </Link>
       </div>
 

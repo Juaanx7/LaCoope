@@ -1,95 +1,114 @@
-// 🎨 Paleta de colores
-$primary-color: #007bff;
-$secondary-color: #17a2b8;
-$background-color: #f8f9fa;
-$text-color: #343a40;
+/* ===========================
+   🎨 Design Tokens
+=========================== */
 
-// 🌍 Estilos globales
+:root {
+  --primary: #0a8c57;
+  --primary-dark: #066c43;
+
+  --surface: #ffffff;
+  --background: #f4f6f7;
+
+  --text: #1d1f23;
+  --muted: #6b7280;
+
+  --border: rgba(0, 0, 0, 0.08);
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 18px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* ===========================
+   🌍 Base Reset
+=========================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
 body {
-  font-family: "Arial", sans-serif;
-  background-color: $background-color;
-  color: $text-color;
   margin: 0;
-  padding: 0;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--background);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
-// Variables de colores (ejemplo)
-$primary-color: #282c34;
-$text-color: white;
+/* ===========================
+   🧩 Layout base
+=========================== */
 
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
+.page {
+  padding: 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page__title {
+  font-size: 24px;
+  font-weight: 900;
   margin: 0;
-  padding: 0;
 }
 
-nav {
-  padding: 1rem;
-  background: $primary-color;
-  
-  a {
-    margin-right: 1rem;
-    color: $text-color;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+.page__subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
 }
 
-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
+.page__actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ===========================
+   🔘 Botones globales
+=========================== */
+
+.btn {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-weight: 800;
+  border: 1px solid rgba(0,0,0,.08);
   cursor: pointer;
-  border-radius: 5px;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background-color: #0056b3;
-  }
+  transition: all .15s ease;
 }
 
-.home-container {
-  text-align: center;
-  padding: 2rem;
-
-  h1 {
-    color: #333;
-  }
-
-  .home-sections {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-  }
-
-  .card {
-    background: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 250px;
-    transition: transform 0.3s ease;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-
-    h2 {
-      color: #007bff;
-    }
-  }
+.btn--primary {
+  background: var(--primary);
+  border: none;
+  color: white;
 }
 
-.btn-danger {
-  background: #dc3545;
-  color: #fff;
+.btn--primary:hover {
+  background: var(--primary-dark);
+}
 
-  &:hover { background: darken(#dc3545, 6%); }
-  &:disabled { opacity: .6; cursor: not-allowed; }
+.btn--ghost {
+  background: #fff;
+  color: var(--text);
+}
+
+.btn--ghost:hover {
+  background: rgba(0,0,0,.05);
+}
+
+.btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
 }
