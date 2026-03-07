@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
+function apiUrl(path) {
+  if (path && !path.startsWith("/")) path = "/" + path;
+  return API_BASE + path;
+}  
 import ClienteCard from "../components/ClienteCard";
 import "../styles/Clientes.scss";
 
@@ -22,7 +28,7 @@ function Clientes() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/clientes")
+    fetch(apiUrl("/api/clientes"))
       .then((res) => res.json())
       .then((data) => setClientes(data))
       .catch((error) => console.error("Error al obtener clientes:", error));
@@ -57,7 +63,7 @@ function Clientes() {
     if (!clienteSeleccionado) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/clientes/${datosEditados._id}`, {
+      const response = await fetch(apiUrl(`/api/clientes/${datosEditados._id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosEditados),
@@ -80,7 +86,7 @@ function Clientes() {
 
   const handleCrearCliente = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/clientes", {
+      const response = await fetch(apiUrl("/api/clientes"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoCliente),
@@ -114,7 +120,7 @@ function Clientes() {
     if (!window.confirm("¿Estás seguro de que quieres eliminar este cliente?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/clientes/${id}`, {
+      const response = await fetch(apiUrl(`/api/clientes/${id}`), {
         method: "DELETE",
       });
 

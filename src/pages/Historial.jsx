@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import DatePicker from "react-datepicker";
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
+function apiUrl(path) {
+  if (path && !path.startsWith("/")) path = "/" + path;
+  return API_BASE + path;
+}
 import "react-datepicker/dist/react-datepicker.css";
 import "../styles/HistorialTareas.scss";
 import { useNavigate } from "react-router-dom";
@@ -81,7 +87,7 @@ function HistorialTareas() {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/api/tareas?area=${area}&from=${fechaISO}&to=${fechaISO}`, {
+        const res = await fetch(apiUrl(`/api/tareas?area=${area}&from=${fechaISO}&to=${fechaISO}`), {
           signal: controller.signal,
         });
         const json = await res.json().catch(() => null);
@@ -103,7 +109,7 @@ function HistorialTareas() {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/api/tareas?area=${area}&from=${monthFrom}&to=${monthTo}`, {
+        const res = await fetch(apiUrl(`/api/tareas?area=${area}&from=${monthFrom}&to=${monthTo}`), {
           signal: controller.signal,
         });
         const json = await res.json().catch(() => null);
@@ -137,7 +143,7 @@ function HistorialTareas() {
     const hasta = toYMD(fechaHasta);
 
     try {
-      const res = await fetch(`/api/tareas?area=${area}&from=${desde}&to=${hasta}`);
+      const res = await fetch(apiUrl(`/api/tareas?area=${area}&from=${desde}&to=${hasta}`));
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Error al obtener tareas del rango");
       const list = Array.isArray(json) ? json : json?.data || [];

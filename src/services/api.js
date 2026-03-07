@@ -1,5 +1,13 @@
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
+export function apiUrl(path) {
+  // ensure leading slash on path
+  if (path && !path.startsWith("/")) path = "/" + path;
+  return API_BASE + path;
+}
+
 export async function apiFetch(path, { token, ...options } = {}) {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -13,4 +21,4 @@ export async function apiFetch(path, { token, ...options } = {}) {
     throw new Error(json?.error || "Error de servidor");
   }
   return json;
-}
+}    

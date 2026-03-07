@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
+function apiUrl(path) {
+  if (path && !path.startsWith("/")) path = "/" + path;
+  return API_BASE + path;
+}  
 import "../styles/TaskDetailModal.scss";
 
 const STATUS_LABEL = {
@@ -50,6 +57,8 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
   const currentPriority = useMemo(() => (task?.priority ? task.priority : "med"), [task]);
 
   // ====== Fetch initial task ======
+  const { token } = useAuth();
+
   useEffect(() => {
     if (!open || !taskId) return;
 
@@ -59,7 +68,10 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/tareas/${taskId}`, { signal: controller.signal });
+        const headers = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl(`/api/tareas/${taskId}`), { signal: controller.signal, headers });
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || "No se pudo cargar la tarea");
 
@@ -89,7 +101,7 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
 
   // ====== Helpers ======
   const refetchTask = useCallback(async () => {
-    const res = await fetch(`/api/tareas/${taskId}`);
+    const res = await fetch(apiUrl(`/api/tareas/${taskId}`));
     const json = await res.json();
     const doc = json?.data || json;
     setTask(doc);
@@ -140,9 +152,12 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       setError("");
 
       try {
-        const res = await fetch(`/api/tareas/${taskId}`, {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl(`/api/tareas/${taskId}`), {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ description: trimmed }),
           signal: controller.signal,
         });
@@ -196,9 +211,12 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       setError("");
 
       try {
-        const res = await fetch(`/api/tareas/${taskId}`, {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl(`/api/tareas/${taskId}`), {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ client: trimmed }),
         });
 
@@ -274,9 +292,12 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
     setError("");
 
     try {
-      const res = await fetch(`/api/tareas/${taskId}/status`, {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl(`/api/tareas/${taskId}/status`), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -304,9 +325,12 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
     setError("");
 
     try {
-      const res = await fetch(`/api/tareas/${taskId}`, {
+      const headers = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch(apiUrl(`/api/tareas/${taskId}`), {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ priority: newPriority }),
       });
 
@@ -336,7 +360,10 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
     setError("");
 
     try {
-      const res = await fetch(`/api/tareas/${taskId}`, { method: "DELETE" });
+      const headers = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const res = await fetch(apiUrl(`/api/tareas/${taskId}`), { method: "DELETE", headers });
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "No se pudo eliminar la tarea");
 

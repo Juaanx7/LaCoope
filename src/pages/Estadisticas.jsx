@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
+function apiUrl(path) {
+  if (path && !path.startsWith("/")) path = "/" + path;
+  return API_BASE + path;
+}  
 import "../styles/Estadisticas.scss";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from "chart.js";
@@ -14,7 +20,7 @@ function Estadisticas() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/clientes")
+    fetch(apiUrl("/api/clientes"))
       .then((res) => res.json())
       .then((data) => {
         setClientes(data);
