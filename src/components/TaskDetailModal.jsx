@@ -51,6 +51,12 @@ const lastSavedClientRef = useRef("");
 const clientTimerRef = useRef(null);
 const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
 
+  // ====== Draft editable (auto-save) - Notas ======
+const [draftNotes, setDraftNotes] = useState("");
+const lastSavedNotesRef = useRef("");
+const notesTimerRef = useRef(null);
+const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
+
   const savedToastTimerRef = useRef(null);
 
   const currentStatus = useMemo(() => (task?.status ? task.status : "pending"), [task]);
@@ -89,6 +95,11 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
         lastSavedDescriptionRef.current = desc;
         hadChangesRef.current = false;
         setDescSaveState(SAVE_STATE.idle);
+
+        const notes = (doc?.notes || "").toString();
+        setDraftNotes(notes);
+        lastSavedNotesRef.current = notes;
+        setNotesSaveState(SAVE_STATE.idle);
       } catch (e) {
         if (e.name !== "AbortError") setError(e.message || "Error");
       } finally {
@@ -243,6 +254,59 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
     [taskId, onUpdated, onSaved]
   );
 
+  const saveNotesNow = useCallback(
+    async (nextNotes, { notifyToast = false } = {}) => {
+      if (!taskId) return;
+
+      const trimmed = (nextNotes ?? "").toString();
+
+      if (trimmed === lastSavedNotesRef.current) {
+        setNotesSaveState(SAVE_STATE.idle);
+        return;
+      }
+
+      // cancel timer pendiente
+      if (notesTimerRef.current) {
+        clearTimeout(notesTimerRef.current);
+        notesTimerRef.current = null;
+      }
+
+      setNotesSaveState(SAVE_STATE.saving);
+      setError("");
+
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl(`/api/tareas/${taskId}`), {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({ notes: trimmed }),
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || "No se pudo guardar las notas");
+
+        const updated = json?.data || json;
+
+        setTask(updated);
+        lastSavedNotesRef.current = trimmed;
+        setNotesSaveState(SAVE_STATE.saved);
+
+        onUpdated?.();
+
+        // ✅ toast SOLO si lo pedimos explícitamente (al cerrar)
+        if (notifyToast) onSaved?.();
+
+        setTimeout(() => setNotesSaveState(SAVE_STATE.idle), 1500);
+      } catch (e) {
+        setNotesSaveState(SAVE_STATE.error);
+        setError(e.message || "Error");
+      }
+    },
+    [taskId, onUpdated, onSaved]
+  );
+
   useEffect(() => {
     if (!open || !taskId || loading || !task) return;
     if (draftClient === lastSavedClientRef.current) return;
@@ -260,6 +324,24 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       }
     };
   }, [draftClient, open, taskId, loading, task, saveClientNow]);
+
+  useEffect(() => {
+    if (!open || !taskId || loading || !task) return;
+    if (draftNotes === lastSavedNotesRef.current) return;
+
+    if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
+
+    notesTimerRef.current = setTimeout(() => {
+      saveNotesNow(draftNotes); // 👈 sin toast
+    }, 600);
+
+    return () => {
+      if (notesTimerRef.current) {
+        clearTimeout(notesTimerRef.current);
+        notesTimerRef.current = null;
+      }
+    };
+  }, [draftNotes, open, taskId, loading, task, saveNotesNow]);
 
   // ====== Debounce auto-save al tipear ======
   useEffect(() => {
@@ -385,9 +467,14 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       clearTimeout(clientTimerRef.current);
       clientTimerRef.current = null;
     }
+    if (notesTimerRef.current) {
+      clearTimeout(notesTimerRef.current);
+      notesTimerRef.current = null;
+    }
 
     const dirtyDesc = draftDescription !== lastSavedDescriptionRef.current;
     const dirtyClient = draftClient !== lastSavedClientRef.current;
+    const dirtyNotes = draftNotes !== lastSavedNotesRef.current;
 
     if (dirtyDesc) {
       await saveDescriptionNow(draftDescription, { notifyToast: false });
@@ -399,7 +486,12 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
       if (draftClient !== lastSavedClientRef.current) return;
     }
 
-    if (dirtyDesc || dirtyClient) onSaved?.();
+    if (dirtyNotes) {
+      await saveNotesNow(draftNotes, { notifyToast: false });
+      if (draftNotes !== lastSavedNotesRef.current) return;
+    }
+
+    if (dirtyDesc || dirtyClient || dirtyNotes) onSaved?.();
     onClose?.();
   };
 
@@ -563,10 +655,31 @@ const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
                 </div>
               </div>
 
-              {/* Notas (solo lectura por ahora) */}
+              {/* Notas editable + autosave feedback */}
               <div className="tdm-section">
                 <div className="tdm-label">Notas</div>
-                <div className="tdm-box">{task.notes?.trim() ? task.notes : "—"}</div>
+
+                <textarea
+                  className="tdm-textarea"
+                  value={draftNotes}
+                  onChange={(e) => setDraftNotes(e.target.value)}
+                  placeholder="Escribí notas…"
+                  rows={4}
+                />
+
+                <div className="tdm-savebar">
+                  {notesSaveState === SAVE_STATE.saving ? (
+                    <span className="tdm-saving">Guardando…</span>
+                  ) : notesSaveState === SAVE_STATE.saved ? (
+                    <span className="tdm-saved">Cambios guardados ✓</span>
+                  ) : notesSaveState === SAVE_STATE.error ? (
+                    <span className="tdm-saveerror">Error al guardar</span>
+                  ) : (
+                    <span className="tdm-muted">
+                      {draftNotes !== lastSavedNotesRef.current ? "Cambios sin guardar…" : ""}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}

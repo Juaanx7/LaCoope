@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useArea } from "../context/AreaContext";
+import TaskDetailModal from "../components/TaskDetailModal";
 
 // ---------- helpers ----------
 function toYMD(date) {
@@ -77,10 +78,28 @@ function HistorialTareas() {
   const [fechaDesde, setFechaDesde] = useState(null);
   const [fechaHasta, setFechaHasta] = useState(null);
 
+  // Estado para el modal de detalle de tarea
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailId, setDetailId] = useState(null);
+
   const fechaISO = useMemo(() => toYMD(fechaSeleccionada), [fechaSeleccionada]);
   const { from: monthFrom, to: monthTo } = useMemo(() => monthRange(fechaSeleccionada), [fechaSeleccionada]);
 
   const esFuturo = new Date(fechaSeleccionada) > new Date();
+
+  // Función para refrescar las tareas del día
+  const refetchTareasDelDia = async () => {
+    try {
+      const res = await fetch(apiUrl(`/api/tareas?area=${area}&from=${fechaISO}&to=${fechaISO}`));
+      const json = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(json?.error || "Error al cargar tareas del día");
+      const list = Array.isArray(json) ? json : json?.data || [];
+      setTareasDelDia(list);
+    } catch (err) {
+      console.error("Error al refrescar tareas del día:", err);
+      setTareasDelDia([]);
+    }
+  };
 
   // ✅ Obtener tareas del día con from/to
   useEffect(() => {
@@ -228,7 +247,15 @@ function HistorialTareas() {
                 const clase = getStatusClass(t);
 
                 return (
-                  <li key={t._id} className={`tarea ${clase}`}>
+                  <li 
+                    key={t._id} 
+                    className={`tarea ${clase}`}
+                    onClick={() => {
+                      setDetailId(t._id);
+                      setDetailOpen(true);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="tarea__top">
                       <strong>{diaNombre}</strong>
                       <span className={`pill pill--${clase}`}>{estadoLabel}</span>
@@ -271,6 +298,26 @@ function HistorialTareas() {
           </div>
         </div>
       )}
+
+      {/* Modal de detalle de tarea */}
+      <TaskDetailModal
+        open={detailOpen}
+        taskId={detailId}
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailId(null);
+        }}
+        onUpdated={refetchTareasDelDia}
+        onDeleted={() => {
+          setDetailOpen(false);
+          setDetailId(null);
+          refetchTareasDelDia();
+        }}
+        onSaved={() => {
+          // Opcional: mostrar toast de guardado
+        }}
+      />
+
     </div>
   );
 }

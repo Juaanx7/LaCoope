@@ -50,7 +50,7 @@ function getISOWeekStr(dateInput = new Date()) {
 
 // --- mapeos de estado (interno -> UI) ---
 const statusLabel = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
-const statusClass = { pending: "pendiente", in_progress: "en proceso", done: "finalizada" };
+const statusClass = { pending: "pendiente", in_progress: "en-proceso", done: "finalizada" };
 
 // --- DnD wrappers ---
 function DroppableColumn({ id, children }) {

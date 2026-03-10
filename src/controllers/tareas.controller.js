@@ -72,7 +72,7 @@ export const getTask = async (req, res) => {
 // POST /api/tareas
 export const createTask = async (req, res) => {
   try {
-    let { title, description = "", area, status = "pending", priority = "med", date, notes = "" } = req.body;
+    let { title, description = "", client = "", area, status = "pending", priority = "med", date, notes = "" } = req.body;
 
     if (!title || !area) {
       return res.status(400).json({ ok: false, error: "title y area son obligatorios" });
@@ -94,6 +94,7 @@ export const createTask = async (req, res) => {
     const payload = {
       title,
       description,
+      client,
       area: areaSlug,
       status,
       priority,
