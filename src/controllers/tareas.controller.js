@@ -15,7 +15,6 @@ function toSlug(text) {
 }
 
 // GET /api/tareas
-// Filtros: ?area=internet&week=2025-W34&from=YYYY-MM-DD&to=YYYY-MM-DD&status=pending,in_progress&q=texto
 export const listTasks = async (req, res) => {
   try {
     const { area, week, from, to, status, q } = req.query;
@@ -114,7 +113,7 @@ export const updateTask = async (req, res) => {
     try {
       const { id } = req.params;
 
-      // 🔐 requiere que exista req.user (lo vamos a asegurar en el punto 5 con requireAuth)
+      //requiere que exista req.user
       const role = req.user?.role;
 
       if (!role) {
@@ -126,7 +125,7 @@ export const updateTask = async (req, res) => {
 
       const isPending = tarea.status === "pending";
 
-      // ✅ campos permitidos según rol
+      // campos permitidos según rol
       let allowed = [];
 
       if (role === "admin") {
@@ -155,8 +154,6 @@ export const updateTask = async (req, res) => {
       if (Object.keys(payload).length === 0) {
         return res.status(400).json({ ok: false, error: "No hay campos permitidos para actualizar" });
       }
-
-      // ===== validaciones existentes (adaptadas) =====
 
       // normalizar/validar area
       if (payload.area) {
@@ -190,7 +187,6 @@ export const updateTask = async (req, res) => {
 
       if (!updated) return res.status(404).json({ ok: false, error: "Tarea no encontrada" });
 
-      // si cambió fecha, recalcular week/fechaSemana forzando validate/save (igual que tu lógica)
       if (payload.date) {
         updated.week = undefined;
         await updated.validate();

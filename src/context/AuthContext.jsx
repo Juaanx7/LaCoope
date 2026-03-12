@@ -1,21 +1,19 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { apiFetch } from "../services/api";
+import { getStoredAuth, saveAuth, clearAuth } from "../utils/auth";
 
 const AuthContext = createContext(null);
-
-const SESSION_DURATION = 1000 * 60 * 60 * 8; // 8 horas
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔎 Inicializar sesión
+  // Inicializar sesión
   useEffect(() => {
-    const stored = JSON.parse(sessionStorage.getItem("auth") || "null");
+    const stored = getStoredAuth();
 
-    if (!stored || stored.expiresAt < Date.now()) {
-      sessionStorage.removeItem("auth");
+    if (!stored) {
       setLoading(false);
       return;
     }
@@ -26,7 +24,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setToken("");
     setUser(null);
-    sessionStorage.removeItem("auth");
+    clearAuth();
   }, []);
 
   const login = useCallback(async (email, password) => {
@@ -35,13 +33,7 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password }),
     });
 
-    const authData = {
-      token: data.token,
-      expiresAt: Date.now() + SESSION_DURATION,
-    };
-
-    sessionStorage.setItem("auth", JSON.stringify(authData));
-
+    saveAuth(data.token);
     setToken(data.token);
     setUser(data.user);
   }, []);
@@ -64,7 +56,9 @@ export function AuthProvider({ children }) {
   }, [token, logout]);
 
   useEffect(() => {
-    if (token) refreshMe();
+    if (token) {
+      refreshMe();
+    }
   }, [token, refreshMe]);
 
   return (

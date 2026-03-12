@@ -11,7 +11,7 @@ function signToken(user) {
   return jwt.sign(
     { sub: user._id.toString(), role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "8h" } // changed from 7d to 8 hours
+    { expiresIn: "8h" }
   );
 }
 
@@ -22,7 +22,6 @@ router.post("/login", async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: "Faltan credenciales" });
 
     const user = await User.findOne({ email: String(email).toLowerCase().trim() });
-    // ✅ activo por defecto: solo bloquea si active === false
     if (!user || user.active === false) return res.status(401).json({ error: "Credenciales inválidas" });
 
     const ok = await bcrypt.compare(String(password), user.passwordHash);
@@ -42,10 +41,8 @@ router.post("/login", async (req, res) => {
 
 // GET /api/auth/me
 router.get("/me", requireAuth, async (req, res) => {
-  // requireAuth ya cargó el usuario y lo dejó en req.user
   const user = req.user;
 
-  // ✅ si querés validar active acá también:
   if (!user || user.active === false) return res.status(401).json({ error: "No autorizado" });
 
   return res.json({

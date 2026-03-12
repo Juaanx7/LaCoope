@@ -12,7 +12,7 @@ const router = Router();
 // GET /api/areas
 router.get("/", listAreas);
 
-// GET /api/areas/:idOrSlug  (acepta ObjectId o slug)
+// GET /api/areas/:idOrSlug
 router.get("/:idOrSlug", getArea);
 
 // POST /api/areas

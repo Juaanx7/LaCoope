@@ -1,7 +1,3 @@
-/**
- * Seed para crear/actualizar áreas base de LaCoope.
- * Ejecutar con:  npm run seed:areas
- */
 import "dotenv/config";
 import mongoose from "mongoose";
 import Area from "../models/Area.model.js";

@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "./styles/main.scss";
 
 import Tareas from "./pages/Tareas";
 import Historial from "./pages/Historial";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
@@ -14,9 +14,9 @@ function App() {
         {/* Público */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protegido - Navbar solo aparece aquí */}
+        {/* Protegido */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<><Navbar /><Outlet /></>}>
+          <Route element={<MainLayout />}>
             <Route path="/" element={<Tareas />} />
             <Route path="/tareas" element={<Tareas />} />
             <Route path="/historial" element={<Historial />} />
@@ -24,7 +24,7 @@ function App() {
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

@@ -33,7 +33,6 @@ export default function Login() {
   return (
     <div className="login">
       <div className="login__shell">
-        {/* Panel izquierdo (desktop) */}
         <aside className="login__left" aria-hidden="true">
           <div className="login__abstract">
             <span className="blob blob--1" />
@@ -55,7 +54,6 @@ export default function Login() {
         <main className="login__right">
           <form className="login__card" onSubmit={onSubmit}>
             <div className="login__cardHead">
-              {/* En mobile mostramos logo arriba */}
               <img className="login__logo login__logo--mobile" src={logoCoope} alt="La Coope" />
               <h2 className="login__title">Iniciar sesión</h2>
               <p className="login__subtitle">Ingresá con tu cuenta habilitada</p>
@@ -84,7 +82,7 @@ export default function Login() {
               <div className="login__inputWrap">
                 <input
                   className="login__input login__input--withBtn"
-                  type={showPass ? "text" : "password"}   // ✅ visible cuando showPass = true
+                  type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
@@ -97,10 +95,6 @@ export default function Login() {
                   onClick={() => setShowPass((v) => !v)}
                   aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  {/* ✅ icono coherente:
-                      si showPass=true (se ve), mostramos el ojo tachado para "ocultar"
-                      si showPass=false (no se ve), mostramos el ojo normal para "mostrar"
-                  */}
                   {showPass ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                 </button>
               </div>

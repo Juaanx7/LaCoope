@@ -1,4 +1,4 @@
-import mongoose from "mongoose"; // ⬅ Cambiado a import
+import mongoose from "mongoose";
 
 const ClienteSchema = new mongoose.Schema({
   nombre: { type: String, required: true },

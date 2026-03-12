@@ -50,7 +50,6 @@ function getStatusClass(task) {
   return statusClass[norm] || raw;
 }
 function getDateISO(task) {
-  // preferimos fechaSemana (ya la generás en el model)
   if (task.fechaSemana) return task.fechaSemana;
   if (task.date) {
     const d = parseDateLikeLocal(task.date);
@@ -101,7 +100,7 @@ function HistorialTareas() {
     }
   };
 
-  // ✅ Obtener tareas del día con from/to
+  // Obtener tareas del día con from/to
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
@@ -123,7 +122,7 @@ function HistorialTareas() {
     return () => controller.abort();
   }, [fechaISO, area]);
 
-  // ✅ Fechas con tareas: pedimos todas las del mes y generamos el set de fechas
+  // Fechas con tareas: pedimos todas las del mes y generamos el set de fechas
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
@@ -152,7 +151,7 @@ function HistorialTareas() {
     return () => controller.abort();
   }, [monthFrom, monthTo, area]);
 
-  // ✅ Exportar PDF por rango usando from/to
+  // Exportar PDF por rango usando from/to
   const exportarPDF = async () => {
     if (!fechaDesde || !fechaHasta) {
       alert("Por favor seleccioná ambas fechas.");

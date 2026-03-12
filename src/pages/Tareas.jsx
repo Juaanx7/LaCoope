@@ -20,9 +20,9 @@ const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 // --- helpers de fechas ---
 function startOfISOWeek(date = new Date()) {
   const d = new Date(date);
-  const day = (d.getDay() + 6) % 7; // lunes=0..domingo=6
+  const day = (d.getDay() + 6) % 7;
   d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - day); // lunes
+  d.setDate(d.getDate() - day);
   return d;
 }
 function addDays(date, n) {
@@ -38,7 +38,7 @@ function toYMD(date) {
 }
 function getISOWeekStr(dateInput = new Date()) {
   const d = new Date(dateInput);
-  const day = (d.getDay() + 6) % 7; // lunes=0..domingo=6
+  const day = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - day + 3);
   const firstThursday = new Date(d.getFullYear(), 0, 4);
   const firstThursdayDay = (firstThursday.getDay() + 6) % 7;
@@ -70,7 +70,7 @@ function DraggableCard({ id, children }) {
   });
 }
 
-// Extrae el cliente de la tarea (campo client o notas)
+// Extrae el cliente de la tarea
 function getCliente(task) {
   if (task?.client && String(task.client).trim()) return String(task.client).trim();
 

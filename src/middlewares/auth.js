@@ -14,7 +14,7 @@ export async function requireAuth(req, res, next) {
 
     if (!user) return res.status(401).json({ error: "Usuario no válido" });
 
-    req.user = user; // <-- queda disponible en rutas/controladores
+    req.user = user;
     next();
   } catch (e) {
     return res.status(401).json({ error: "Token inválido o expirado" });

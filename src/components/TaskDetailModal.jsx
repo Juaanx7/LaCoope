@@ -37,7 +37,7 @@ export default function TaskDetailModal({ open, taskId, onClose, onUpdated, onDe
 
   const [error, setError] = useState("");
 
-  // ====== Draft editable (auto-save) - Descipcion ======
+  //Draft editable
   const [draftDescription, setDraftDescription] = useState("");
   const lastSavedDescriptionRef = useRef("");
   const saveTimerRef = useRef(null);
@@ -45,13 +45,13 @@ export default function TaskDetailModal({ open, taskId, onClose, onUpdated, onDe
   const [descSaveState, setDescSaveState] = useState(SAVE_STATE.idle);
   const hadChangesRef = useRef(false);
 
-  // ====== Draft editable (auto-save) - Usuario ======
+  // Draft editable (auto-save) - Usuario
 const [draftClient, setDraftClient] = useState("");
 const lastSavedClientRef = useRef("");
 const clientTimerRef = useRef(null);
 const [clientSaveState, setClientSaveState] = useState(SAVE_STATE.idle);
 
-  // ====== Draft editable (auto-save) - Notas ======
+  // Draft editable (auto-save) - Notas
 const [draftNotes, setDraftNotes] = useState("");
 const lastSavedNotesRef = useRef("");
 const notesTimerRef = useRef(null);
@@ -62,7 +62,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
   const currentStatus = useMemo(() => (task?.status ? task.status : "pending"), [task]);
   const currentPriority = useMemo(() => (task?.priority ? task.priority : "med"), [task]);
 
-  // ====== Fetch initial task ======
+  //Fetch initial task
   const { token } = useAuth();
 
   useEffect(() => {
@@ -110,7 +110,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     return () => controller.abort();
   }, [open, taskId]);
 
-  // ====== Helpers ======
+  //Helpers 
   const refetchTask = useCallback(async () => {
     const res = await fetch(apiUrl(`/api/tareas/${taskId}`));
     const json = await res.json();
@@ -141,7 +141,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     }
   };
 
-  // ====== Save description (PUT) ======
+  //Save description (PUT) 
   const saveDescriptionNow = useCallback(
     async (nextDescription, { notifyToast = false } = {}) => {
       if (!taskId) return;
@@ -184,7 +184,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
 
         onUpdated?.();
 
-        // ✅ Toast SOLO si lo pedimos explícitamente (por ejemplo al cerrar)
+        // Toast SOLO si lo pedimos explícitamente
         if (notifyToast) onSaved?.();
 
         savedToastTimerRef.current = setTimeout(() => {
@@ -242,7 +242,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
 
         onUpdated?.();
 
-        // ✅ toast SOLO si lo pedimos explícitamente (al cerrar)
+        // toast SOLO si lo pedimos explícitamente (al cerrar)
         if (notifyToast) onSaved?.();
 
         setTimeout(() => setClientSaveState(SAVE_STATE.idle), 1500);
@@ -295,7 +295,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
 
         onUpdated?.();
 
-        // ✅ toast SOLO si lo pedimos explícitamente (al cerrar)
+        // toast SOLO si lo pedimos explícitamente (al cerrar)
         if (notifyToast) onSaved?.();
 
         setTimeout(() => setNotesSaveState(SAVE_STATE.idle), 1500);
@@ -314,7 +314,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     if (clientTimerRef.current) clearTimeout(clientTimerRef.current);
 
     clientTimerRef.current = setTimeout(() => {
-      saveClientNow(draftClient); // 👈 sin toast
+      saveClientNow(draftClient);
     }, 600);
 
     return () => {
@@ -332,7 +332,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
 
     notesTimerRef.current = setTimeout(() => {
-      saveNotesNow(draftNotes); // 👈 sin toast
+      saveNotesNow(draftNotes);
     }, 600);
 
     return () => {
@@ -343,7 +343,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     };
   }, [draftNotes, open, taskId, loading, task, saveNotesNow]);
 
-  // ====== Debounce auto-save al tipear ======
+  // Debounce auto-save al tipear
   useEffect(() => {
     if (!open) return;
     if (!taskId) return;
@@ -365,7 +365,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     };
   }, [draftDescription, open, taskId, loading, task, saveDescriptionNow]);
 
-  // ====== Status change (PATCH) ======
+  // Status change (PATCH)
   const handleStatusChange = async (newStatus) => {
     if (!taskId) return;
 
@@ -398,7 +398,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     }
   };
 
-  // ====== Priority change (PUT) ======
+  // Priority change (PUT)
   const handlePriorityChange = async (newPriority) => {
     if (!taskId) return;
 
@@ -431,7 +431,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     }
   };
 
-  // ====== Delete ======
+  // Delete
   const handleDelete = async () => {
     if (!taskId) return;
 
@@ -457,7 +457,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
     }
   };
 
-  // ====== Close with autosave backup ======
+  // Close with autosave backup
   const handleClose = async () => {
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
@@ -496,7 +496,7 @@ const [notesSaveState, setNotesSaveState] = useState(SAVE_STATE.idle);
   };
 
 
-  // cleanup cuando se desmonta / se cierra
+  // cleanup cuando se cierra
   useEffect(() => {
     if (!open) {
       clearTimers();

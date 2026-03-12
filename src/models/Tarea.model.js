@@ -15,11 +15,7 @@ function toSlug(text) {
     ?.replace(/-+/g, "-");
 }
 
-/* =========================
-   🔧 Helpers UTC seguros
-   ========================= */
-
-// "YYYY-MM-DD" calculado en UTC (evita corrimientos por timezone)
+// "YYYY-MM-DD" calculado en UTC
 function ymdUTC(dateInput = new Date()) {
   const d = new Date(dateInput);
   const y = d.getUTCFullYear();
@@ -33,7 +29,7 @@ function getISOWeekStrUTC(dateInput = new Date()) {
   const d = new Date(dateInput);
 
   // mover al jueves de la semana ISO (todo en UTC)
-  const day = (d.getUTCDay() + 6) % 7; // lunes=0..domingo=6
+  const day = (d.getUTCDay() + 6) % 7;
   d.setUTCDate(d.getUTCDate() - day + 3);
 
   // primer jueves del año (UTC)
@@ -46,23 +42,19 @@ function getISOWeekStrUTC(dateInput = new Date()) {
   return `${year}-W${String(weekNo).padStart(2, "0")}`;
 }
 
-/* =========================
-   Schema
-   ========================= */
-
 const TareaSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 100 },
     description: { type: String, trim: true, default: "" },
     client: { type: String, trim: true, default: "" },
 
-    // Multi-área (guardamos slug para filtrar fácil)
+    // Multi-área
     area: { type: String, required: true, lowercase: true, trim: true, index: true },
 
     status: { type: String, enum: ESTADOS, default: "pending", index: true },
     priority: { type: String, enum: PRIORIDADES, default: "med" },
 
-    // Fecha real y semana ISO (derivadas de UTC)
+    // Fecha real y semana ISO
     date: { type: Date, required: true },
     week: { type: String, required: true, index: true },
 
@@ -76,15 +68,13 @@ const TareaSchema = new mongoose.Schema(
 
 // Derivar campos usando UTC para evitar “corrimientos” de un día
 TareaSchema.pre("validate", function (next) {
-  if (!this.date) this.date = new Date(); // Date ISO
+  if (!this.date) this.date = new Date();
 
   // Normaliza área a slug por las dudas
   if (this.area) this.area = toSlug(this.area);
 
-  // 🔐 Clave: derivar ambos en UTC
-  this.fechaSemana = ymdUTC(this.date);      // "YYYY-MM-DD" (UTC)
-  this.week = getISOWeekStrUTC(this.date);   // "YYYY-Www" (UTC)
-
+  this.fechaSemana = ymdUTC(this.date);    
+  this.week = getISOWeekStrUTC(this.date);  
   next();
 });
 

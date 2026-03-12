@@ -36,7 +36,7 @@ const AreaSchema = new mongoose.Schema(
 function toSlug(text) {
   return text
     .toString()
-    .normalize("NFD") // quita acentos
+    .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")

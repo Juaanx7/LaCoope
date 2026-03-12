@@ -36,7 +36,6 @@ export default function AreaSelector() {
 
   const options = useMemo(() => {
     const list = areas?.length ? areas : FALLBACK;
-    // si el área actual no está en la lista, la agregamos para que no quede “sin opción”
     if (!list.some((a) => a.slug === area)) {
       return [{ slug: area, name: area }, ...list];
     }
